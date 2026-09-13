@@ -163,3 +163,4 @@ async function cloudSignUp(email, password) {
   return sb ? sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } }) : { error: { message: "облако недоступно" } };
 }
 async function cloudSignOut() { if (sb) await sb.auth.signOut(); }
+async function cloudChangePassword(password) { return sb ? sb.auth.updateUser({ password }) : { error: { message: "облако недоступно" } }; }

@@ -50,6 +50,10 @@
   --dock-accent:#7C5CD6;
   --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(124,92,214,.45);
+  --todo:#D8343A;
+  --todo-bg:rgba(216,52,58,.07);
+  --idea:#C98500;
+  --idea-bg:rgba(232,160,0,.10);
   --r:14px;
   --sans:"Onest",-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
@@ -88,6 +92,10 @@
   --dock-accent:#7C5CD6;
   --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(0,0,0,.5);
+  --todo:#FF6B6B;
+  --todo-bg:rgba(255,107,107,.10);
+  --idea:#FFC23D;
+  --idea-bg:rgba(255,194,61,.09);
 }
 }
 :root[data-theme="dark"]{
@@ -123,6 +131,10 @@
   --dock-accent:#7C5CD6;
   --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(0,0,0,.5);
+  --todo:#FF6B6B;
+  --todo-bg:rgba(255,107,107,.10);
+  --idea:#FFC23D;
+  --idea-bg:rgba(255,194,61,.09);
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
@@ -288,23 +300,46 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .dp-sum div:first-child b{color:var(--accent)}
 .day-panel h4{margin:6px 0 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;flex:none}
 .tl,.notes{display:flex;flex-direction:column;margin-bottom:16px;flex:none}
-.tl-row{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 8px;border-radius:10px;cursor:pointer}
+.tl-row{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:10px 10px;border-radius:10px;cursor:pointer}
+.tl-row+.tl-row{box-shadow:inset 0 1px 0 var(--line)}
 .tl-row:hover{background:var(--hover)}
-.tl-row .tt{font:13px var(--mono);color:var(--dim);font-variant-numeric:tabular-nums}
-.tl-row .tx{overflow-wrap:anywhere}
-.tl-row .td{font:13px var(--mono);color:var(--dim);white-space:nowrap}
-.tl-row.stop .tx,.tl-row.stop .td,.tl-row.stop .tt{color:var(--mute)}
-.tl-row.stop .tx{font-style:italic}
-.tl-row.open .tx{font-weight:600}
-.tl-row.open .td{color:var(--accent)}
+.tl-row .tt{font:12.5px var(--mono);color:var(--mute);font-variant-numeric:tabular-nums}
+.tl-row .tx{overflow-wrap:anywhere;font-weight:500;color:var(--text)}
+.tl-row .td{font:500 13px var(--mono);color:var(--dim);white-space:nowrap}
+.tl-row.stop .tx{font-weight:400;font-style:italic;color:var(--mute)}
+.tl-row.stop .td,.tl-row.stop .tt{color:var(--mute)}
+.tl-row.open{background:var(--accent-soft);box-shadow:none}
+.tl-row.open+.tl-row{box-shadow:none}
+.tl-row.open .tx{font-weight:650}
+.tl-row.open .tt,.tl-row.open .td{color:var(--accent)}
 .tl-row .link{font:11px var(--mono);color:var(--accent);margin-left:6px}
-.note{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:7px 8px;border-radius:10px;cursor:pointer}
+.nbox{border-radius:16px;padding:12px 8px 6px;margin-bottom:12px;flex:none}
+.nbox.todo{background:var(--todo-bg)}
+.nbox.idea{background:var(--idea-bg)}
+.day-panel .nbox h4{margin:0 6px 6px;justify-content:flex-start;align-items:center;gap:8px;font-weight:600}
+.nbox.todo h4{color:var(--todo)}
+.nbox.idea h4{color:var(--idea)}
+.nbox h4 svg{flex:none}
+.nbox h4 .cnt{margin-left:auto;min-width:22px;height:22px;padding:0 7px;border-radius:11px;font:600 12px/22px var(--mono);text-align:center;color:var(--on-accent)}
+.nbox.todo h4 .cnt{background:var(--todo)}
+.nbox.idea h4 .cnt{background:var(--idea)}
+.nbox h4 .cnt:empty{display:none}
+.nbox .notes{margin-bottom:0}
+.note{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 6px;border-radius:10px;cursor:pointer}
 .note:hover{background:var(--hover)}
-.note .tt{font:13px var(--mono);color:var(--mute)}
-.note.closed .tx{color:var(--done);text-decoration:line-through}
-.note .nx{width:26px;height:26px;border-radius:8px;color:var(--mute);display:grid;place-items:center;font-size:15px}
-.note .nx:hover{background:var(--accent-soft);color:var(--accent)}
-.note.closed .nx{color:var(--accent)}
+.note .tt{font:500 12.5px var(--mono)}
+.nbox.todo .note .tt{color:var(--todo)}
+.nbox.idea .note .tt{color:var(--idea)}
+.note .tx{font-weight:500;color:var(--text);overflow-wrap:anywhere}
+.note.closed .tx{color:var(--done);text-decoration:line-through;font-weight:400}
+.note.closed .tt{opacity:.45}
+.note .nx{width:28px;height:28px;border-radius:8px;color:var(--todo);display:grid;place-items:center;font-size:15px;align-self:center}
+.note .nx:hover{background:var(--todo-bg)}
+.note.closed .nx{color:var(--mute)}
+.pw{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.pw input{height:48px;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px;outline:0;color:var(--text)}
+.pw input:focus{border-color:var(--accent)}
+.pw .save{flex:none}
 .dp-empty{color:var(--mute);font-size:14px;padding:4px 8px 6px}
 .ed-row{display:flex;gap:6px;align-items:center;padding:6px 4px;flex-wrap:wrap}
 .ed-row input{height:38px;border:1px solid var(--check);border-radius:10px;background:var(--bg);padding:0 10px;outline:0;color:var(--text)}
@@ -579,12 +614,16 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <div class="drawer-h"><b>Фокус бар</b><button class="x" data-close aria-label="Закрыть">×</button></div>
   <div class="dp-nav"><button id="dpPrev" aria-label="Предыдущий день">‹</button><div><div class="dp-day" id="dpDay"></div><div class="dp-date" id="dpDate"></div></div><button id="dpNext" aria-label="Следующий день">›</button></div>
   <div class="dp-sum"><div><b id="dpWork"></b><span>в работе</span></div><div><b id="dpPause"></b><span>паузы</span></div><div><b id="dpCount"></b><span>записей</span></div></div>
+  <div class="nbox todo">
+    <h4><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="currentColor"/><path d="M9 4.6v5.2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="13.1" r="1.2" fill="#fff"/></svg>Не забыть<span class="cnt" id="dpTodoN"></span></h4>
+    <div class="notes" id="dpTodo"></div>
+  </div>
+  <div class="nbox idea">
+    <h4><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.6a5.3 5.3 0 0 0-3.1 9.6v1.9h6.2v-1.9A5.3 5.3 0 0 0 9 1.6z" fill="currentColor"/><path d="M6.4 15.4h5.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Идеи<span class="cnt" id="dpIdeaN"></span></h4>
+    <div class="notes" id="dpIdea"></div>
+  </div>
   <h4>Хронология</h4>
   <div class="tl" id="dpTl"></div>
-  <h4>Не забыть <span id="dpTodoN"></span></h4>
-  <div class="notes" id="dpTodo"></div>
-  <h4>Идеи <span id="dpIdeaN"></span></h4>
-  <div class="notes" id="dpIdea"></div>
   <div class="dp-foot">
     <input id="dpIn" placeholder="Как в Tab: дело · идея … · не забыть … · пауза" autocomplete="off">
     <button class="ghost-btn" id="dpDigest">Сводка дня</button>
@@ -623,7 +662,13 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <h3>Аккаунт</h3>
   <div class="sub2" id="acctEmail"></div>
   <div class="acct-status" id="acctStatus"></div>
-  <div class="actions" style="margin-top:14px">
+  <form class="pw" id="pwBox" hidden autocomplete="on">
+    <input type="email" autocomplete="username" id="pwUser" hidden>
+    <input id="pwNew" type="password" autocomplete="new-password" placeholder="Новый пароль, минимум 6 символов" minlength="6" required>
+    <button class="save" type="submit" id="pwSave">Сохранить новый пароль</button>
+  </form>
+  <button class="auth-switch" id="pwBtn" type="button">Сменить пароль</button>
+  <div class="actions" style="margin-top:6px">
     <button class="del" id="acctOut">Выйти</button>
     <button class="save" id="acctSync">Синхронизировать</button>
   </div>
@@ -633,7 +678,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 <div class="drag-badge" id="dragBadge" aria-hidden="true"><b>1</b></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=2"></script>
+<script src="sync.js?v=3"></script>
 <script>
 const LS = "takt-mock-v1";
 const pad = n => String(n).padStart(2, "0");
@@ -1186,7 +1231,18 @@ $("authForm").addEventListener("submit", async e => {
   if (authMode === "up" && !data.session) { $("authMsg").className = "auth-msg ok"; $("authMsg").textContent = "Готово. Подтверди почту по ссылке из письма и войди."; authMode = "in"; paintAuthMode(); return; }
   $("authPass").value = "";
 });
-$("acctBtn").onclick = () => { if (!$("acctEmail").textContent) { $("auth").hidden = false; return; } $("acctStatus").textContent = STATUS_TEXT[lastSync] || ""; $("scrim").hidden = false; $("acctSheet").hidden = false; };
+$("acctBtn").onclick = () => { if (!$("acctEmail").textContent) { $("auth").hidden = false; return; } $("acctStatus").textContent = STATUS_TEXT[lastSync] || ""; $("pwBox").hidden = true; $("pwBtn").hidden = false; $("pwNew").value = ""; $("scrim").hidden = false; $("acctSheet").hidden = false; };
+$("pwBtn").onclick = () => { $("pwUser").value = $("acctEmail").textContent; $("pwBox").hidden = false; $("pwBtn").hidden = true; $("pwNew").focus(); };
+$("pwBox").addEventListener("submit", async e => {
+  e.preventDefault();
+  const v = $("pwNew").value;
+  if (v.length < 6) return toast("Пароль — минимум 6 символов");
+  $("pwSave").disabled = true;
+  const { error } = await cloudChangePassword(v);
+  $("pwSave").disabled = false;
+  if (error) return toast(AUTH_ERR(error.message || String(error)));
+  $("pwNew").value = ""; closeAll(); toast("Пароль изменён");
+});
 $("acctSync").onclick = async () => { await pushPending(); await pullChanges(); toast("Синхронизировано"); };
 $("acctOut").onclick = async () => { closeAll(); await cloudSignOut(); toast("Вышел из аккаунта"); };
 
@@ -1388,8 +1444,8 @@ function paintDay() {
     return `<div class="tl-row${stop ? " stop" : ""}${r.open ? " open" : ""}" data-eid="${r.e.id}"><span class="tt">${tt}</span><span class="tx">${label}${r.e.taskId ? '<span class="link">задача</span>' : ""}</span><span class="td">${r.end == null ? "" : dur(r.d)}</span></div>`;
   }).join("") || `<div class="dp-empty">${d === TODAY ? "Пока пусто. Перетащи задачу в Фокус бар или скажи дело через Tab." : "В этот день записей нет."}</div>`;
   const notes = (kind, el, n) => {
-    const list = entries.filter(e => e.kind === kind && e.at.startsWith(d)).sort((a, b) => (a.closed - b.closed) || a.at.localeCompare(b.at));
-    $(n).textContent = list.length || "";
+    const list = entries.filter(e => e.kind === kind && e.at.startsWith(d)).sort((a, b) => (!!a.closed - !!b.closed) || a.at.localeCompare(b.at));
+    $(n).textContent = (kind === "todo" ? list.filter(e => !e.closed).length : list.length) || "";
     $(el).innerHTML = list.map(e => dpEdit === e.id ? rowEdit(e) : `<div class="note${e.closed ? " closed" : ""}" data-eid="${e.id}"><span class="tt">${hhmm(e.at)}</span><span class="tx">${esc(e.text)}</span>${kind === "todo" ? `<button class="nx" data-e="close" title="${e.closed ? "Вернуть" : "Закрыть"}">${e.closed ? "✓" : "✕"}</button>` : "<span></span>"}</div>`).join("") || '<div class="dp-empty">Ничего.</div>';
   };
   notes("todo", "dpTodo", "dpTodoN");
