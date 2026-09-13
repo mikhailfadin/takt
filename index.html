@@ -256,6 +256,72 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .adder .when{font:12px var(--mono);color:var(--dock-mute);white-space:nowrap}
 .plus{width:40px;height:40px;border-radius:50%;background:var(--dock-accent);color:var(--plus-fg);display:grid;place-items:center;flex:none}
 .plus:hover{filter:brightness(1.08)}
+.plus-big{width:54px;height:54px;box-shadow:var(--shadow-lg)}
+
+/* фокус бар */
+.fbar{flex:1;min-width:0;display:flex;align-items:center;gap:12px;height:54px;background:var(--dock-card);color:var(--dock-text);border-radius:27px;box-shadow:var(--shadow-lg);padding:0 8px 0 22px;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.fbar:hover{transform:translateY(-1px)}
+.fbar.drop-target{box-shadow:inset 0 0 0 2px var(--dock-accent),var(--shadow-lg);transform:scale(1.01)}
+.fbar .ftext{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;font-weight:500}
+.fbar.idle .ftext,.fbar.closed .ftext{color:var(--dock-mute);font-weight:400}
+.fbar .fhint{font:12px var(--mono);color:var(--dock-mute);white-space:nowrap}
+.fbar .fdot{width:10px;height:10px;border-radius:50%;background:var(--dock-accent);flex:none;animation:pulse 1.6s infinite}
+.fbar .fpause{width:10px;height:12px;flex:none;border-left:3px solid var(--dock-mute);border-right:3px solid var(--dock-mute)}
+.fbar .ftime{font:500 17px var(--mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fbar.pause .ftime,.fbar.pause .ftext{color:var(--dock-mute)}
+.fbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--dock-accent);background:rgba(124,92,214,.12);flex:none}
+.fbtn:hover{background:rgba(124,92,214,.22)}
+.fbar .fopen{font:12px var(--mono);color:var(--dock-mute);white-space:nowrap;padding:0 8px}
+
+/* день: хронология */
+.day-panel{width:460px}
+.dp-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex:none}
+.dp-nav button{width:36px;height:36px;border-radius:10px;color:var(--dim);font-size:20px}
+.dp-nav button:hover{background:var(--accent-soft);color:var(--accent)}
+.dp-nav button:disabled{opacity:.3;cursor:default;background:none}
+.dp-day{font-size:24px;font-weight:600;letter-spacing:-.015em;text-align:center}
+.dp-date{color:var(--dim);font-size:13px;text-align:center}
+.dp-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;flex:none}
+.dp-sum div{background:var(--bg);border-radius:12px;padding:10px 12px}
+.dp-sum b{display:block;font:500 18px var(--mono);letter-spacing:-.02em}
+.dp-sum span{font-size:12px;color:var(--mute)}
+.dp-sum div:first-child b{color:var(--accent)}
+.day-panel h4{margin:6px 0 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;flex:none}
+.tl,.notes{display:flex;flex-direction:column;margin-bottom:16px;flex:none}
+.tl-row{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 8px;border-radius:10px;cursor:pointer}
+.tl-row:hover{background:var(--hover)}
+.tl-row .tt{font:13px var(--mono);color:var(--dim);font-variant-numeric:tabular-nums}
+.tl-row .tx{overflow-wrap:anywhere}
+.tl-row .td{font:13px var(--mono);color:var(--dim);white-space:nowrap}
+.tl-row.stop .tx,.tl-row.stop .td,.tl-row.stop .tt{color:var(--mute)}
+.tl-row.stop .tx{font-style:italic}
+.tl-row.open .tx{font-weight:600}
+.tl-row.open .td{color:var(--accent)}
+.tl-row .link{font:11px var(--mono);color:var(--accent);margin-left:6px}
+.note{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:7px 8px;border-radius:10px;cursor:pointer}
+.note:hover{background:var(--hover)}
+.note .tt{font:13px var(--mono);color:var(--mute)}
+.note.closed .tx{color:var(--done);text-decoration:line-through}
+.note .nx{width:26px;height:26px;border-radius:8px;color:var(--mute);display:grid;place-items:center;font-size:15px}
+.note .nx:hover{background:var(--accent-soft);color:var(--accent)}
+.note.closed .nx{color:var(--accent)}
+.dp-empty{color:var(--mute);font-size:14px;padding:4px 8px 6px}
+.ed-row{display:flex;gap:6px;align-items:center;padding:6px 4px;flex-wrap:wrap}
+.ed-row input{height:38px;border:1px solid var(--check);border-radius:10px;background:var(--bg);padding:0 10px;outline:0;color:var(--text)}
+.ed-row .ed-t{width:70px;font:14px var(--mono);text-align:center}
+.ed-row .ed-x{flex:1;min-width:140px}
+.ed-row button{height:38px;padding:0 12px;border-radius:10px;font-weight:500;font-size:14px}
+.ed-row .ok{background:var(--accent);color:var(--on-accent)}
+.ed-row .rm{color:var(--warn)}
+.dp-foot{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:8px;flex:none}
+.dp-foot input{height:48px;border-radius:24px;border:1px solid var(--line);background:var(--bg);padding:0 18px;outline:0;font-size:15px;color:var(--text)}
+.dp-foot input:focus{border-color:var(--accent)}
+.dp-foot .ghost-btn{height:40px;border:1px solid var(--line)}
+.dp-foot .ghost-btn:hover{border-color:var(--check);color:var(--accent)}
+.spent{display:flex;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--line);flex:none}
+.spent span{color:var(--dim)}
+.spent b{font:500 14px var(--mono);color:var(--accent)}
+.digest pre{white-space:pre-wrap;font:12.5px/1.55 var(--mono);background:var(--bg);border-radius:12px;padding:14px;margin:0 0 14px;max-height:55vh;overflow:auto;color:var(--text)}
 
 /* карточка задачи */
 .scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
@@ -418,8 +484,8 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
-      <kbd>Esc</kbd> — закрыть окно<br>
-      Задачи без времени двигай мышкой, чтобы менять порядок. Любую задачу можно перетащить на пункт меню слева: Входящие, Сегодня, Завтра, Когда-нибудь
+      <kbd>N</kbd> — новая задача · <kbd>Esc</kbd> — закрыть окно<br>
+      Перетащи задачу в Фокус бар внизу — пойдёт время. На пункт меню слева — перенесётся. Задачи без времени двигай, чтобы менять порядок
     </div>
   </aside>
 
@@ -444,11 +510,8 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 
     <div class="dock">
       <button class="pill" id="carryBtn">Перенести…</button>
-      <div class="adder">
-        <input id="newTask" placeholder="Новая задача — напиши или продиктуй" autocomplete="off">
-        <span class="when" id="addWhen"></span>
-        <button class="plus" id="addBtn" aria-label="Новая задача"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-      </div>
+      <div class="fbar idle" id="fbar" role="button" tabindex="0" aria-label="Фокус бар"></div>
+      <button class="plus plus-big" id="addBtn" aria-label="Новая задача" title="Новая задача — N"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="mdock">
       <div class="mprog" id="mProgWrap"><div class="line"><div id="mLine"></div></div><span id="mProg"></span></div>
@@ -484,6 +547,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 
   <button class="frow" id="edPrioRow"><span>Приоритетная</span><span class="sw" id="edPrio"></span></button>
   <div class="hint">Приоритетные стоят выше остальных и выделены крупнее. Остальные выстраиваются по времени.</div>
+  <div class="spent" id="edSpent" hidden><span>Потрачено</span><b id="edSpentVal"></b></div>
 
   <div class="actions">
     <button class="del" id="edDel">Удалить</button>
@@ -509,6 +573,32 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <div class="moves" id="moves"></div>
   <div class="carry-cal" id="moveCal" hidden></div>
   <button class="ghost-btn" data-close>Отмена</button>
+</div>
+
+<aside class="drawer day-panel" id="dayPanel" hidden>
+  <div class="drawer-h"><b>Фокус бар</b><button class="x" data-close aria-label="Закрыть">×</button></div>
+  <div class="dp-nav"><button id="dpPrev" aria-label="Предыдущий день">‹</button><div><div class="dp-day" id="dpDay"></div><div class="dp-date" id="dpDate"></div></div><button id="dpNext" aria-label="Следующий день">›</button></div>
+  <div class="dp-sum"><div><b id="dpWork"></b><span>в работе</span></div><div><b id="dpPause"></b><span>паузы</span></div><div><b id="dpCount"></b><span>записей</span></div></div>
+  <h4>Хронология</h4>
+  <div class="tl" id="dpTl"></div>
+  <h4>Не забыть <span id="dpTodoN"></span></h4>
+  <div class="notes" id="dpTodo"></div>
+  <h4>Идеи <span id="dpIdeaN"></span></h4>
+  <div class="notes" id="dpIdea"></div>
+  <div class="dp-foot">
+    <input id="dpIn" placeholder="Как в Tab: дело · идея … · не забыть … · пауза" autocomplete="off">
+    <button class="ghost-btn" id="dpDigest">Сводка дня</button>
+  </div>
+</aside>
+
+<div class="modal digest" id="digestModal" hidden>
+  <h3>Сводка дня</h3>
+  <div class="sub2">В Obsidian уходит с мака в 23:00</div>
+  <pre id="digestText"></pre>
+  <div class="actions" style="margin-top:0">
+    <button class="ghost-btn" style="flex:1" data-close>Закрыть</button>
+    <button class="save" id="digestCopy">Скопировать</button>
+  </div>
 </div>
 
 <div class="pov" id="pov" hidden>
@@ -692,7 +782,6 @@ function render() {
       <div class="col"><h2>Осталось <span>${a.length}</span></h2><div class="list" data-list="${view.date}">${a.map(x => taskHTML(x)).join("") || `<div class="empty">${view.date === INBOX ? "Входящие пусты — всё разобрано." : view.date === SOMEDAY ? "Здесь пока ничего не отложено." : "На этот день задач нет — добавь внизу."}</div>`}</div></div>
       <div class="col"><h2>Сделано <span>${d.length}</span></h2><div class="list">${d.map(x => taskHTML(x)).join("") || '<div class="empty">Пока ничего.</div>'}</div></div>
     </div>`;
-    $("addWhen").textContent = view.date === INBOX ? "во входящие" : view.date === SOMEDAY ? "в когда-нибудь" : "на " + rel(view.date);
   } else {
     const s = weekStart(view.date), e = addDays(s, 6);
     const fmt = d => parse(d).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
@@ -708,7 +797,6 @@ function render() {
         <div class="list" data-list="${d}">${[...active(d), ...doneOn(d)].map(x => taskHTML(x, true)).join("")}</div>
       </div>`;
     }).join("")}</div>`;
-    $("addWhen").textContent = "на сегодня";
   }
   $("board").classList.toggle("week-mode", view.mode === "week");
   $("aim").hidden = (view.mode === "day" && view.date === TODAY) || (bucket && isMobile());
@@ -745,7 +833,7 @@ $("aim").onclick = $("aimInline").onclick = () => go("day", TODAY);
 
 /* ---------- быстрое добавление ---------- */
 const addDate = () => view.mode === "day" ? view.date : TODAY;
-function quickAdd(inp = $("newTask")) {
+function quickAdd(inp) {
   const v = inp.value.trim();
   if (!v) return;
   const date = addDate();
@@ -753,10 +841,9 @@ function quickAdd(inp = $("newTask")) {
   inp.value = "";
   save(); render();
 }
-$("newTask").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) quickAdd(); });
 $("mNewTask").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { quickAdd($("mNewTask")); $("mNewTask").blur(); } });
 $("mAddBtn").onclick = () => { openCard(null, $("mNewTask").value.trim()); $("mNewTask").value = ""; };
-$("addBtn").onclick = () => { openCard(null, $("newTask").value.trim()); $("newTask").value = ""; };
+$("addBtn").onclick = () => openCard(null);
 
 /* ---------- клики по доске ---------- */
 document.addEventListener("click", e => {
@@ -771,7 +858,7 @@ document.addEventListener("click", e => {
   if (task) {
     const x = tasks.find(k => k.id === task.dataset.id);
     const act = t.closest("[data-act]")?.dataset.act;
-    if (act === "toggle") { x.done = !x.done; x.doneAt = x.done ? new Date().toISOString() : null; save(); render(); return; }
+    if (act === "toggle") { x.done = !x.done; x.doneAt = x.done ? new Date().toISOString() : null; if (x.done) focusTaskDone(x); save(); render(); return; }
     if (act === "prio") { x.prio = !x.prio; save(); render(); return; }
     return openCard(x.id);
   }
@@ -805,6 +892,8 @@ function openCard(id, prefill = "") {
   $("drawerTitle").textContent = x ? "Задача" : "Новая задача";
   $("edTitle").value = draft.title;
   $("edDel").hidden = !x;
+  const spent = x ? spentOn(x.id) : 0;
+  $("edSpent").hidden = !spent; $("edSpentVal").textContent = spent ? dur(spent) : "";
   closePops();
   drawCard();
   $("scrim").hidden = false; $("drawer").hidden = false;
@@ -921,7 +1010,7 @@ $("carryGo").onclick = () => {
   save(); closeAll(); render(); toast(`Перенесено: ${n} → ${rel(to)}`);
 };
 
-function closeAll() { $("scrim").hidden = true; $("drawer").hidden = true; $("carryModal").hidden = true; $("moveSheet").hidden = true; $("acctSheet").hidden = true; editId = null; draft = null; closeMenu(); }
+function closeAll() { $("scrim").hidden = true; $("drawer").hidden = true; $("carryModal").hidden = true; $("moveSheet").hidden = true; $("acctSheet").hidden = true; $("dayPanel").hidden = true; $("digestModal").hidden = true; dpEdit = null; editId = null; draft = null; closeMenu(); }
 
 /* ---------- перетаскивание ----------
    порядок меняют только задачи без времени (время главнее);
@@ -941,6 +1030,7 @@ document.addEventListener("dragstart", e => {
 document.addEventListener("dragend", () => { clearDrop(); document.querySelectorAll(".dragging").forEach(el => el.classList.remove("dragging")); dragId = null; });
 document.addEventListener("dragover", e => {
   if (!dragId) return;
+  if (e.target.closest("#fbar")) { e.preventDefault(); clearDrop(); $("fbar").classList.add("drop-target"); return; }
   const bucket = e.target.closest('.nav button[data-mode="day"]');
   if (bucket) {
     const x = tasks.find(k => k.id === dragId);
@@ -960,6 +1050,7 @@ document.addEventListener("dragover", e => {
 document.addEventListener("drop", e => {
   if (!dragId) return;
   const x = tasks.find(k => k.id === dragId);
+  if (e.target.closest("#fbar")) { e.preventDefault(); clearDrop(); focusStartTask(x); return; }
   const bucket = e.target.closest('.nav button[data-mode="day"]');
   if (bucket) {
     e.preventDefault();
@@ -1099,7 +1190,12 @@ $("acctBtn").onclick = () => { if (!$("acctEmail").textContent) { $("auth").hidd
 $("acctSync").onclick = async () => { await pushPending(); await pullChanges(); toast("Синхронизировано"); };
 $("acctOut").onclick = async () => { closeAll(); await cloudSignOut(); toast("Вышел из аккаунта"); };
 
-document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("pov").hidden) return closePov(); dismiss(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if (!$("pov").hidden) return closePov(); if (dpEdit) { dpEdit = null; return paintDay(); } dismiss(); return; }
+  const typing = e.target.closest?.("input,textarea,[contenteditable]");
+  const overlay = [...document.querySelectorAll(".drawer,.modal,.auth,.pov")].some(el => !el.hidden);
+  if (!typing && !overlay && !e.metaKey && !e.ctrlKey && !e.altKey && (e.code === "KeyN") && !isMobile()) { e.preventDefault(); openCard(null); }
+});
 
 /* закрыть окно; открытая карточка при этом сохраняется сама */
 function dismiss() {
@@ -1166,7 +1262,203 @@ mainEl.addEventListener("touchend", () => {
   if (d > 110) $("collapse").click();
 }, { passive: true });
 
+/* ---------- Фокус бар: журнал рабочего дня (логика VibeBar) ----------
+   запись: { id, at: "ГГГГ-ММ-ДДTЧЧ:ММ:СС" (местное время), kind: task|idea|todo|stop, text, taskId?, closed? }
+   дело длится до следующего дела или паузы; день обрезается в 23:00 */
+const FLS = "takt-focus-v1";
+let entries = (() => { try { return JSON.parse(localStorage.getItem(FLS)) || []; } catch { return []; } })();
+let dpDate = TODAY, dpEdit = null;
+function saveEntries() { try { localStorage.setItem(FLS, JSON.stringify(entries)); } catch {} window.onEntriesSaved?.(); }
+const stamp = d => `${iso(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const hhmm = s => s.slice(11, 16);
+const ms = s => new Date(s).getTime();
+const cutoff = day => ms(day + "T23:00:00");
+const isEnd = t => /^(стоп|конец|финиш)/i.test(t);
+const dayEv = day => entries.filter(e => e.at.startsWith(day) && (e.kind === "task" || e.kind === "stop")).sort((a, b) => a.at.localeCompare(b.at));
+function dur(m) { const min = Math.floor(m / 60000); return min >= 60 ? `${Math.floor(min / 60)}ч ${pad(min % 60)}м` : `${min}м`; }
+function clock(m) { const s = Math.max(0, Math.floor(m / 1000)), h = Math.floor(s / 3600); return (h ? h + ":" + pad(Math.floor(s / 60) % 60) : Math.floor(s / 60)) + ":" + pad(s % 60); }
+
+const IDEA = ["идея", "идеи", "идею", "мысль", "мысли", "заметка", "заметку"];
+const TODO = ["незабыть", "напомнить", "напоминание", "важно", "запомнить", "todo"];
+const PAUSE = ["перерыв", "пауза", "стоп", "конец", "финиш", "обед"];
+function classify(raw) {
+  let t = raw.replace(/\s+/g, " ").trim().replace(/^["'«»]+|["'«»]+$/g, "").trim().replace(/[.!]+$/, "").trim();
+  if (!t) return null;
+  const low = t.toLowerCase(), words = t.split(" ");
+  const first = low.split(/[\s,.;:!?]+/)[0];
+  const rest = words.length > 1 ? t.slice(words[0].length).replace(/^[\s,.:;—-]+/, "").trim() : "";
+  if (/^не (забыть|забудь)/.test(low)) return { kind: "todo", text: words.length > 2 ? words.slice(2).join(" ").replace(/^[\s,.:;—-]+/, "") : t };
+  if (TODO.includes(first)) return { kind: "todo", text: rest || t };
+  if (IDEA.includes(first)) return { kind: "idea", text: rest || t };
+  if (PAUSE.includes(first)) return { kind: "stop", text: t };
+  return { kind: "task", text: t };
+}
+function addEntry(o) {
+  const e = { id: uid(), at: stamp(new Date()), closed: false, ...o };
+  entries.push(e); saveEntries(); paintFocus();
+  return e;
+}
+
+function timeline(day) {
+  const ev = dayEv(day), cut = cutoff(day), now = Date.now();
+  const rows = []; let work = 0, pause = 0;
+  ev.forEach((e, i) => {
+    const s = ms(e.at), last = i + 1 === ev.length;
+    const live = last && day === TODAY && now < cut;
+    if (last && e.kind === "stop" && (isEnd(e.text) || !live)) { rows.push({ e, s, end: null, d: 0 }); return; }
+    const end = Math.min(last ? (live ? now : day < TODAY ? cut : s) : ms(ev[i + 1].at), cut);
+    const d = Math.max(0, end - s);
+    e.kind === "task" ? work += d : pause += d;
+    rows.push({ e, s, end, d, open: live });
+  });
+  return { rows, work, pause };
+}
+function focusNow() {
+  const ev = dayEv(TODAY), last = ev[ev.length - 1], now = Date.now();
+  if (!last) return { state: "idle" };
+  const { work } = timeline(TODAY);
+  if (now >= cutoff(TODAY)) return { state: "closed", at: last.kind === "stop" ? hhmm(last.at) : "23:00", work };
+  if (last.kind === "task") return { state: "run", entry: last, since: ms(last.at) };
+  if (isEnd(last.text)) return { state: "closed", at: hhmm(last.at), work };
+  return { state: "pause", since: ms(last.at), resume: [...ev].reverse().find(e => e.kind === "task" && !(e.taskId && tasks.find(t => t.id === e.taskId)?.done)) };
+}
+function spentOn(taskId) {
+  const days = new Set(entries.filter(e => e.taskId === taskId).map(e => e.at.slice(0, 10)));
+  let sum = 0;
+  for (const d of days) for (const r of timeline(d).rows) if (r.e.taskId === taskId) sum += r.d;
+  return sum;
+}
+
+const I_PAUSE = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4.5 2.5v9M9.5 2.5v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const I_STOP = '<svg width="13" height="13" viewBox="0 0 13 13"><rect x="2" y="2" width="9" height="9" rx="2" fill="currentColor"/></svg>';
+const I_PLAY = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4 2.5v9l7.5-4.5z" fill="currentColor"/></svg>';
+function paintFbar() {
+  const c = focusNow(), el = $("fbar");
+  const over = el.classList.contains("drop-target");
+  el.className = "fbar " + c.state + (over ? " drop-target" : "");
+  const open = '<span class="fopen">день ↗</span>';
+  if (c.state === "run") el.innerHTML = `<span class="fdot"></span><span class="ftext" title="${esc(c.entry.text)}">${esc(c.entry.text)}</span><span class="ftime" id="fTime">${clock(Date.now() - c.since)}</span><button class="fbtn" data-f="pause" title="Пауза">${I_PAUSE}</button><button class="fbtn" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "pause") el.innerHTML = `<span class="fpause"></span><span class="ftext">Пауза${c.resume ? " · " + esc(c.resume.text) : ""}</span><span class="ftime" id="fTime">${clock(Date.now() - c.since)}</span>${c.resume ? `<button class="fbtn" data-f="resume" title="Продолжить">${I_PLAY}</button>` : ""}<button class="fbtn" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "closed") el.innerHTML = `<span class="ftext">День закрыт в ${c.at} · в работе ${dur(c.work)}</span><span class="fhint">перетащи задачу или Tab</span>${open}`;
+  else el.innerHTML = `<span class="ftext">Перетащи задачу сюда — пойдёт время</span><span class="fhint">или Tab на маке</span>${open}`;
+}
+function paintFocus() { paintFbar(); if (!$("dayPanel").hidden) paintDay(); }
+
+function focusStartTask(x) {
+  const c = focusNow();
+  if (c.state === "run" && c.entry.taskId === x.id) return toast("Уже идёт");
+  addEntry({ kind: "task", text: x.title, taskId: x.id });
+  toast("В фокусе: " + (x.title.length > 40 ? x.title.slice(0, 38) + "…" : x.title));
+}
+function focusTaskDone(x) {
+  const c = focusNow();
+  if (c.state === "run" && c.entry.taskId === x.id) { addEntry({ kind: "stop", text: "пауза" }); toast("Задача сделана — таймер на паузе"); }
+}
+$("fbar").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]");
+  if (!b) return openDay(TODAY);
+  const f = b.dataset.f, c = focusNow();
+  if (f === "pause") addEntry({ kind: "stop", text: "пауза" });
+  if (f === "resume" && c.resume) addEntry({ kind: "task", text: c.resume.text, taskId: c.resume.taskId });
+  if (f === "end") {
+    const en = addEntry({ kind: "stop", text: "стоп" });
+    toastUndo("День закрыт", () => { entries = entries.filter(k => k.id !== en.id); saveEntries(); paintFocus(); });
+  }
+});
+$("fbar").addEventListener("dragleave", e => { if (!$("fbar").contains(e.relatedTarget)) $("fbar").classList.remove("drop-target"); });
+
+/* ---------- панель «День» ---------- */
+function openDay(d) { closeAll(); dpDate = d; paintDay(); $("scrim").hidden = false; $("dayPanel").hidden = false; }
+function rowEdit(e) {
+  return `<div class="ed-row" data-eid="${e.id}"><input class="ed-t" value="${hhmm(e.at)}" maxlength="5" inputmode="numeric"><input class="ed-x" value="${esc(e.text)}"><button class="ok" data-e="save">OK</button><button class="rm" data-e="del">Удалить</button></div>`;
+}
+function paintDay() {
+  const d = dpDate, { rows, work, pause } = timeline(d);
+  $("dpDay").textContent = cap(rel(d));
+  $("dpDate").textContent = long(d);
+  $("dpNext").disabled = d >= TODAY;
+  $("dpWork").textContent = dur(work);
+  $("dpPause").textContent = dur(pause);
+  $("dpCount").textContent = rows.filter(r => r.e.kind === "task").length;
+  $("dpTl").innerHTML = rows.map(r => {
+    if (dpEdit === r.e.id) return rowEdit(r.e);
+    const stop = r.e.kind === "stop";
+    const tt = r.end == null ? hhmm(r.e.at) : r.open ? `${hhmm(r.e.at)}–сейчас` : `${hhmm(r.e.at)}–${stamp(new Date(r.end)).slice(11, 16)}`;
+    const label = stop ? (r.end == null && isEnd(r.e.text) ? "день закрыт" : esc(r.e.text.toLowerCase())) : esc(r.e.text);
+    return `<div class="tl-row${stop ? " stop" : ""}${r.open ? " open" : ""}" data-eid="${r.e.id}"><span class="tt">${tt}</span><span class="tx">${label}${r.e.taskId ? '<span class="link">задача</span>' : ""}</span><span class="td">${r.end == null ? "" : dur(r.d)}</span></div>`;
+  }).join("") || `<div class="dp-empty">${d === TODAY ? "Пока пусто. Перетащи задачу в Фокус бар или скажи дело через Tab." : "В этот день записей нет."}</div>`;
+  const notes = (kind, el, n) => {
+    const list = entries.filter(e => e.kind === kind && e.at.startsWith(d)).sort((a, b) => (a.closed - b.closed) || a.at.localeCompare(b.at));
+    $(n).textContent = list.length || "";
+    $(el).innerHTML = list.map(e => dpEdit === e.id ? rowEdit(e) : `<div class="note${e.closed ? " closed" : ""}" data-eid="${e.id}"><span class="tt">${hhmm(e.at)}</span><span class="tx">${esc(e.text)}</span>${kind === "todo" ? `<button class="nx" data-e="close" title="${e.closed ? "Вернуть" : "Закрыть"}">${e.closed ? "✓" : "✕"}</button>` : "<span></span>"}</div>`).join("") || '<div class="dp-empty">Ничего.</div>';
+  };
+  notes("todo", "dpTodo", "dpTodoN");
+  notes("idea", "dpIdea", "dpIdeaN");
+  $("dpIn").parentElement.querySelector("input").hidden = d !== TODAY;
+}
+$("dpPrev").onclick = () => { dpEdit = null; dpDate = addDays(dpDate, -1); paintDay(); };
+$("dpNext").onclick = () => { dpEdit = null; if (dpDate < TODAY) { dpDate = addDays(dpDate, 1); paintDay(); } };
+$("dayPanel").addEventListener("click", e => {
+  const act = e.target.closest("[data-e]")?.dataset.e;
+  const row = e.target.closest("[data-eid]");
+  if (!row) return;
+  const en = entries.find(k => k.id === row.dataset.eid);
+  if (!en) return;
+  if (act === "close") { en.closed = !en.closed; saveEntries(); return paintFocus(); }
+  if (act === "del") { entries = entries.filter(k => k.id !== en.id); dpEdit = null; saveEntries(); return paintFocus(); }
+  if (act === "save") return saveRowEdit(row, en);
+  if (row.classList.contains("ed-row")) return;
+  dpEdit = en.id; paintDay();
+  setTimeout(() => $("dayPanel").querySelector(".ed-x")?.focus(), 0);
+});
+function saveRowEdit(row, en) {
+  const t = row.querySelector(".ed-t").value.trim(), x = row.querySelector(".ed-x").value.trim();
+  const m = t.match(/^(\d{1,2})[:.]?(\d{2})$/);
+  if (!m || +m[1] > 23 || +m[2] > 59) return toast("Время в виде ЧЧ:ММ");
+  en.at = `${en.at.slice(0, 10)}T${pad(+m[1])}:${m[2]}:00`;
+  if (x && en.kind !== "stop") en.text = x;
+  dpEdit = null; saveEntries(); paintFocus();
+}
+$("dayPanel").addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.isComposing) return;
+  const row = e.target.closest(".ed-row");
+  if (row) { e.preventDefault(); saveRowEdit(row, entries.find(k => k.id === row.dataset.eid)); }
+});
+$("dpIn").addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.isComposing) return;
+  const c = classify($("dpIn").value);
+  if (!c) return;
+  addEntry(c); $("dpIn").value = "";
+  toast(c.kind === "idea" ? "Записано в идеи" : c.kind === "todo" ? "Записано в «Не забыть»" : c.kind === "stop" ? (isEnd(c.text) ? "День закрыт" : "Пауза") : "В фокусе: " + c.text);
+});
+
+function digest(day) {
+  const { rows, work } = timeline(day);
+  const tasksRows = rows.filter(r => r.e.kind === "task" && r.d > 0);
+  const out = [`# Сводка за ${day}`, "", "| Начало | Конец | Длит. | Чем занимался |", "|---|---|---|---|"];
+  for (const r of tasksRows) out.push(`| ${hhmm(r.e.at)} | ${r.open ? "сейчас" : stamp(new Date(r.end)).slice(11, 16)} | ${dur(r.d)} | ${r.e.text} |`);
+  out.push("", `**Итого учтено: ${dur(work)}** · записей: ${tasksRows.length}`, "", "## Не забыть", "");
+  const list = k => entries.filter(e => e.kind === k && e.at.startsWith(day)).sort((a, b) => a.at.localeCompare(b.at));
+  const todos = list("todo"), ideas = list("idea");
+  out.push(...(todos.length ? todos.map(e => `- [${e.closed ? "x" : " "}] ${hhmm(e.at)} — ${e.text}`) : ["_за день ничего не отмечено_"]));
+  out.push("", "## Идеи", "");
+  out.push(...(ideas.length ? ideas.map(e => `- ${hhmm(e.at)} — ${e.text}`) : ["_за день ничего не отмечено_"]));
+  return out.join("\n");
+}
+$("dpDigest").onclick = () => { $("digestText").textContent = digest(dpDate); $("dayPanel").hidden = true; $("digestModal").hidden = false; };
+$("digestCopy").onclick = async () => { try { await navigator.clipboard.writeText($("digestText").textContent); toast("Сводка скопирована"); } catch { toast("Не удалось скопировать"); } };
+
+let lastMin = -1;
+setInterval(() => {
+  const c = focusNow(), t = $("fTime");
+  if (c.state !== ($("fbar").classList.contains(c.state) ? c.state : "")) return paintFbar();
+  if (t && c.since) t.textContent = clock(Date.now() - c.since);
+  const m = new Date().getMinutes();
+  if (m !== lastMin) { lastMin = m; if (!$("dayPanel").hidden && !dpEdit) paintDay(); }
+}, 1000);
+
 render();
+paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
 </body>
