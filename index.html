@@ -258,6 +258,22 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   .toast{bottom:calc(200px + env(safe-area-inset-bottom))}
   .side-foot{display:none}
 }
+/* выбор дня на телефоне — как в Calma */
+.pov{position:fixed;inset:0;z-index:45;background:rgba(247,245,251,.74);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);padding:calc(20px + env(safe-area-inset-top)) 16px 20px;overflow:auto}
+.pov-words{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin:2px 4px 18px}
+.pov-words button{font-size:36px;line-height:1.25;font-weight:600;letter-spacing:-.02em;color:var(--dim);text-align:left}
+.pov-words button.on{color:var(--accent);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:7px}
+.pov-cal{padding:12px 8px 8px}
+.pov-cal .pk-g button{height:40px;font-size:15px}
+.board.slide-l{animation:slideL .22s ease}
+.board.slide-r{animation:slideR .22s ease}
+@keyframes slideL{from{transform:translateX(36px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes slideR{from{transform:translateX(-36px);opacity:.2}to{transform:none;opacity:1}}
+.grab{display:none}
+@media (max-width:760px){
+  .main.bucket-view .grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:calc(8px + env(safe-area-inset-top)) auto 0}
+  .main.bucket-view .head{padding-top:10px}
+}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -274,6 +290,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   </aside>
 
   <main class="main">
+    <div class="grab" aria-hidden="true"></div>
     <header class="head">
       <div>
         <h1><span id="h1Plain" hidden></span><span id="h1Lead">Задачи на </span><span class="period" id="period"><span id="periodText"></span><i>⌄</i><div class="menu" id="periodMenu" hidden></div></span></h1>
@@ -354,6 +371,11 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <div class="moves" id="moves"></div>
   <div class="carry-cal" id="moveCal" hidden></div>
   <button class="ghost-btn" data-close>Отмена</button>
+</div>
+
+<div class="pov" id="pov" hidden>
+  <div class="pov-words" id="povWords"></div>
+  <div class="cal pov-cal" id="povCal"></div>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -524,6 +546,7 @@ function render() {
   }
   $("aim").hidden = (view.mode === "day" && view.date === TODAY) || (bucket && isMobile());
   $("collapse").hidden = !(bucket && isMobile());
+  document.querySelector(".main").classList.toggle("bucket-view", bucket);
   $("mBuckets").hidden = bucket;
   $("mProgWrap").hidden = bucket;
   $("mInboxN").textContent = active(INBOX).length || "";
@@ -565,7 +588,7 @@ document.addEventListener("click", e => {
   if (navB) return go(navB.dataset.mode, navB.dataset.date);
   const openB = t.closest("[data-open]");
   if (openB) return go("day", openB.dataset.open);
-  if (t.closest("[data-close]") || t === $("scrim")) return closeAll();
+  if (t.closest("[data-close]") || t === $("scrim")) return dismiss();
   const task = t.closest(".task");
   if (task) {
     const x = tasks.find(k => k.id === task.dataset.id);
@@ -579,6 +602,7 @@ document.addEventListener("click", e => {
 /* ---------- выбор периода ---------- */
 $("period").addEventListener("click", e => {
   if (e.target.closest(".menu")) return;
+  if (isMobile()) { closeMenu(); return openPov(); }
   const m = $("periodMenu");
   if (!m.hidden) return closeMenu();
   m.innerHTML = `<button class="opt" data-mode="day" data-date="${TODAY}">Сегодня <span class="k">${parse(TODAY).getDate()}</span></button>
@@ -818,7 +842,69 @@ $("moves").addEventListener("click", e => {
   closeAll(); moveTask(x, b.dataset.move);
 });
 
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeAll(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("pov").hidden) return closePov(); dismiss(); } });
+
+/* закрыть окно; открытая карточка при этом сохраняется сама */
+function dismiss() {
+  if ($("drawer").hidden || !draft) return closeAll();
+  const title = $("edTitle").value.trim();
+  if (!title) return closeAll();
+  const time = !$("edTimePop").hidden ? wheelTime() : draft.time;
+  const x = editId ? tasks.find(k => k.id === editId) : null;
+  const changed = !x || x.title !== title || x.date !== draft.date || (x.time || "") !== (isBucket(draft.date) ? "" : time) || !!x.prio !== !!draft.prio;
+  changed ? saveCard() : closeAll();
+}
+
+/* ---------- выбор дня на телефоне ---------- */
+function openPov() {
+  const opts = [["вчера", "day", addDays(TODAY, -1)], ["сегодня", "day", TODAY], ["завтра", "day", addDays(TODAY, 1)], ["неделя", "week", TODAY]];
+  $("povWords").innerHTML = opts.map(([l, m, d]) => `<button data-pov-mode="${m}" data-pov-date="${d}" class="${view.mode === m && (m === "week" || view.date === d) ? "on" : ""}">${l}</button>`).join("");
+  picker($("povCal"), { big: true, selected: () => view.mode === "day" ? view.date : null, marks: () => new Set(tasks.filter(x => !x.done).map(x => x.date)), onPick: d => { closePov(); go("day", d); } });
+  $("pov").hidden = false;
+}
+function closePov() { $("pov").hidden = true; }
+$("pov").addEventListener("click", e => {
+  const b = e.target.closest("[data-pov-mode]");
+  if (b) { closePov(); go(b.dataset.povMode, b.dataset.povDate); return; }
+  if (e.target === $("pov") || e.target === $("povWords")) closePov();
+});
+
+/* ---------- свайп по дням ---------- */
+let sw = null;
+$("board").addEventListener("touchstart", e => {
+  if (!isMobile() || view.mode !== "day" || isBucket(view.date) || e.touches.length > 1) return;
+  sw = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+$("board").addEventListener("touchend", e => {
+  if (!sw) return;
+  const dx = e.changedTouches[0].clientX - sw.x, dy = e.changedTouches[0].clientY - sw.y;
+  sw = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) shiftDay(dx < 0 ? 1 : -1);
+}, { passive: true });
+function shiftDay(n) {
+  go("day", addDays(view.date, n));
+  const b = $("board"); b.classList.remove("slide-l", "slide-r"); void b.offsetWidth; b.classList.add(n > 0 ? "slide-l" : "slide-r");
+}
+
+/* ---------- раздел на весь экран закрывается жестом вниз ---------- */
+const mainEl = document.querySelector(".main");
+let pull = null;
+mainEl.addEventListener("touchstart", e => {
+  if (!isMobile() || !(view.mode === "day" && isBucket(view.date))) return;
+  if ($("board").scrollTop > 0 && !e.target.closest(".head,.grab")) return;
+  pull = { y: e.touches[0].clientY, dy: 0 };
+}, { passive: true });
+mainEl.addEventListener("touchmove", e => {
+  if (!pull) return;
+  pull.dy = Math.max(0, e.touches[0].clientY - pull.y);
+  if (pull.dy > 0 && $("board").scrollTop <= 0) { mainEl.style.transition = "none"; mainEl.style.transform = `translateY(${pull.dy * 0.6}px)`; }
+}, { passive: true });
+mainEl.addEventListener("touchend", () => {
+  if (!pull) return;
+  const d = pull.dy; pull = null;
+  mainEl.style.transition = "transform .2s"; mainEl.style.transform = "";
+  if (d > 110) $("collapse").click();
+}, { passive: true });
 
 render();
 </script>
