@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <title>Такт</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -133,9 +134,9 @@ input,textarea{font:inherit;color:inherit}
 
 /* ---------- боковая панель ---------- */
 .side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;gap:22px;overflow:auto}
-.brand{display:flex;align-items:baseline;gap:8px;padding:0 8px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
 .brand b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.brand span{font:12px var(--mono);color:var(--mute)}
+.brand .mark{height:20px;width:auto;color:var(--text);flex:none}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:10px;text-align:left;color:var(--dim);font-weight:500}
 .nav button:hover{background:var(--hover);color:var(--text)}
@@ -392,7 +393,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 <body>
 <div class="app">
   <aside class="side">
-    <div class="brand"><b>Такт</b><span>макет</span></div>
+    <div class="brand" aria-label="Такт"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
