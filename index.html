@@ -387,6 +387,27 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   .main.bucket-view .grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:calc(8px + env(safe-area-inset-top)) auto 0}
   .main.bucket-view .head{padding-top:10px}
 }
+/* вход и аккаунт */
+.auth{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:24px;overflow:auto}
+.auth-card{width:min(360px,100%);display:flex;flex-direction:column;gap:10px}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.auth-logo b{font-size:40px;font-weight:700;letter-spacing:-.03em}
+.auth-logo .mark{height:34px;width:auto;color:var(--text)}
+.auth-sub{margin:0 0 12px;color:var(--dim)}
+.auth input{height:52px;border-radius:14px;border:1px solid var(--line);background:var(--surface);padding:0 16px;font-size:16px;outline:0;color:var(--text)}
+.auth input:focus{border-color:var(--accent)}
+.auth-msg{min-height:20px;font-size:14px;color:var(--warn)}
+.auth-msg.ok{color:var(--dim)}
+.auth .go{height:52px;border-radius:26px}
+.auth-switch{height:44px;color:var(--accent);font-weight:500}
+.auth-later{height:36px;color:var(--mute);font-size:14px}
+.acct{position:relative}
+.acct .dot{position:absolute;right:9px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--mute);box-shadow:0 0 0 2px var(--surface)}
+.acct .dot.ok{background:#4CC38A}
+.acct .dot.syncing{background:var(--accent);animation:pulse 1s infinite}
+.acct .dot.error{background:var(--warn)}
+@keyframes pulse{50%{opacity:.35}}
+.acct-status{color:var(--dim);font-size:14px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -414,6 +435,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
       <button class="aim" id="aim" title="Сегодня" aria-label="Вернуться к сегодня" hidden>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg>
       </button>
+      <button class="aim acct" id="acctBtn" aria-label="Аккаунт и синхронизация" hidden><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="7" r="3.3"/><path d="M3.8 17c.9-3 3.3-4.6 6.2-4.6s5.3 1.6 6.2 4.6"/></svg><i class="dot" id="syncDot"></i></button>
       <button class="aim" id="themeBtn" aria-label="Сменить тему"></button>
       </div>
     </header>
@@ -494,9 +516,34 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <div class="cal pov-cal" id="povCal"></div>
 </div>
 
+<div class="auth" id="auth" hidden>
+  <form class="auth-card" id="authForm" autocomplete="on">
+    <div class="auth-logo"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
+    <p class="auth-sub" id="authSub">Войди, чтобы задачи были и на телефоне, и на компьютере</p>
+    <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="Почта" required>
+    <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" minlength="6" required>
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="go" id="authGo" type="submit">Войти</button>
+    <button class="auth-switch" id="authSwitch" type="button">Нет аккаунта? Создать</button>
+    <button class="auth-later" id="authLater" type="button">Позже</button>
+  </form>
+</div>
+
+<div class="modal" id="acctSheet" hidden>
+  <h3>Аккаунт</h3>
+  <div class="sub2" id="acctEmail"></div>
+  <div class="acct-status" id="acctStatus"></div>
+  <div class="actions" style="margin-top:14px">
+    <button class="del" id="acctOut">Выйти</button>
+    <button class="save" id="acctSync">Синхронизировать</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden></div>
 <div class="drag-badge" id="dragBadge" aria-hidden="true"><b>1</b></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
 <script>
 const LS = "takt-mock-v1";
 const pad = n => String(n).padStart(2, "0");
@@ -520,7 +567,7 @@ function seed() {
   const t = TODAY, tm = addDays(TODAY, 1), t2 = addDays(TODAY, 2), y = addDays(TODAY, -1);
   const at = h => `${t}T${h}:00`;
   let p = 0;
-  const T = (title, date, o = {}) => ({ id: uid(), title, date, time: "", prio: false, done: false, doneAt: null, pos: p++, carry: 0, ...o });
+  const T = (title, date, o = {}) => ({ id: uid(), title, date, time: "", prio: false, done: false, doneAt: null, pos: p++, carry: 0, sample: true, ...o });
   return [
     T("Оплатить интернет и телефон", t, { prio: true }),
     T("Разобрать почту", t, { time: "10:30" }),
@@ -538,7 +585,7 @@ function seed() {
   ];
 }
 function load() { try { return JSON.parse(localStorage.getItem(LS)); } catch { return null; } }
-function save() { try { localStorage.setItem(LS, JSON.stringify(tasks)); } catch {} }
+function save() { try { localStorage.setItem(LS, JSON.stringify(tasks)); } catch {} window.onTasksSaved?.(); }
 
 let tasks = load() || seed();
 let view = { mode: "day", date: TODAY };
@@ -874,7 +921,7 @@ $("carryGo").onclick = () => {
   save(); closeAll(); render(); toast(`Перенесено: ${n} → ${rel(to)}`);
 };
 
-function closeAll() { $("scrim").hidden = true; $("drawer").hidden = true; $("carryModal").hidden = true; $("moveSheet").hidden = true; editId = null; draft = null; closeMenu(); }
+function closeAll() { $("scrim").hidden = true; $("drawer").hidden = true; $("carryModal").hidden = true; $("moveSheet").hidden = true; $("acctSheet").hidden = true; editId = null; draft = null; closeMenu(); }
 
 /* ---------- перетаскивание ----------
    порядок меняют только задачи без времени (время главнее);
@@ -1015,6 +1062,43 @@ $("themeBtn").onclick = () => {
 DARK_MQ.addEventListener("change", () => { if (!storedTheme()) paintTheme(); });
 paintTheme();
 
+/* ---------- вход и синхронизация ---------- */
+let authMode = "in";
+const STATUS_TEXT = { ok: "Всё синхронизировано", syncing: "Синхронизация…", offline: "Нет сети — изменения уйдут, когда появится интернет", error: "Не удалось синхронизировать — повторю позже" };
+let lastSync = "ok";
+window.onSyncStatus = s => { lastSync = s; $("syncDot").className = "dot " + s; $("acctStatus").textContent = STATUS_TEXT[s] || ""; };
+window.onAuthChange = (u, reason) => {
+  if (reason === "нет облака") { $("acctBtn").hidden = true; $("auth").hidden = true; return; }
+  $("acctBtn").hidden = false;
+  $("acctEmail").textContent = u ? u.email : "";
+  let later = false; try { later = sessionStorage.getItem("takt-auth-later") === "1"; } catch {}
+  $("auth").hidden = !!u || later;
+  if (!u) $("syncDot").className = "dot";
+};
+function paintAuthMode() {
+  const up = authMode === "up";
+  $("authGo").textContent = up ? "Создать аккаунт" : "Войти";
+  $("authSwitch").textContent = up ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Создать";
+  $("authPass").autocomplete = up ? "new-password" : "current-password";
+  $("authMsg").textContent = ""; $("authMsg").className = "auth-msg";
+}
+const AUTH_ERR = m => /invalid login/i.test(m) ? "Неверная почта или пароль" : /already registered|already exists/i.test(m) ? "Такой аккаунт уже есть — войди" : /password/i.test(m) && /6/.test(m) ? "Пароль — минимум 6 символов" : /confirm/i.test(m) ? "Подтверди почту по ссылке из письма" : m;
+$("authSwitch").onclick = () => { authMode = authMode === "in" ? "up" : "in"; paintAuthMode(); };
+$("authLater").onclick = () => { try { sessionStorage.setItem("takt-auth-later", "1"); } catch {} $("auth").hidden = true; };
+$("authForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("authEmail").value.trim(), pass = $("authPass").value;
+  $("authGo").disabled = true; $("authMsg").className = "auth-msg ok"; $("authMsg").textContent = authMode === "up" ? "Создаю аккаунт…" : "Вхожу…";
+  const { data, error } = authMode === "up" ? await cloudSignUp(email, pass) : await cloudSignIn(email, pass);
+  $("authGo").disabled = false;
+  if (error) { $("authMsg").className = "auth-msg"; $("authMsg").textContent = AUTH_ERR(error.message || String(error)); return; }
+  if (authMode === "up" && !data.session) { $("authMsg").className = "auth-msg ok"; $("authMsg").textContent = "Готово. Подтверди почту по ссылке из письма и войди."; authMode = "in"; paintAuthMode(); return; }
+  $("authPass").value = "";
+});
+$("acctBtn").onclick = () => { if (!$("acctEmail").textContent) { $("auth").hidden = false; return; } $("acctStatus").textContent = STATUS_TEXT[lastSync] || ""; $("scrim").hidden = false; $("acctSheet").hidden = false; };
+$("acctSync").onclick = async () => { await pushPending(); await pullChanges(); toast("Синхронизировано"); };
+$("acctOut").onclick = async () => { closeAll(); await cloudSignOut(); toast("Вышел из аккаунта"); };
+
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("pov").hidden) return closePov(); dismiss(); } });
 
 /* закрыть окно; открытая карточка при этом сохраняется сама */
@@ -1083,6 +1167,7 @@ mainEl.addEventListener("touchend", () => {
 }, { passive: true });
 
 render();
+if (typeof initCloud === "function") initCloud();
 </script>
 </body>
 </html>
