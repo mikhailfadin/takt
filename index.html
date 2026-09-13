@@ -351,7 +351,11 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .dp-foot{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:8px;flex:none}
 .dp-foot input{height:48px;border-radius:24px;border:1px solid var(--line);background:var(--bg);padding:0 18px;outline:0;font-size:15px;color:var(--text)}
 .dp-foot input:focus{border-color:var(--accent)}
-.dp-foot .ghost-btn{height:40px;border:1px solid var(--line)}
+.dp-foot .ghost-btn{height:40px;border:1px solid var(--line);flex:1}
+.dp-btns{display:flex;gap:8px}
+.dp-grab{display:none}
+.m-only{display:none}
+#dpEnd{display:none}
 .dp-foot .ghost-btn:hover{border-color:var(--check);color:var(--accent)}
 .spent{display:flex;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--line);flex:none}
 .spent span{color:var(--dim)}
@@ -459,7 +463,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   .mprog .line{flex:1;height:2.5px;background:var(--line);border-radius:1px;overflow:hidden}
   .mprog .line div{height:100%;background:var(--accent);transition:width .25s}
   .mprog b{font-weight:500;color:var(--accent)}
-  .mbuckets{display:flex;gap:8px;margin-bottom:10px}
+  .mbuckets{display:flex;gap:8px;margin-bottom:0}
   .mbuckets button{flex:1;display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:14px;background:var(--bucket-card);color:var(--dock-text);box-shadow:var(--shadow);font-weight:500;font-size:15px}
   .mbuckets .n{font:12px var(--mono);color:var(--dock-mute);margin-left:auto}
   .mbuckets svg{color:var(--dock-accent);flex:none}
@@ -484,6 +488,24 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 @keyframes slideL{from{transform:translateX(36px);opacity:.2}to{transform:none;opacity:1}}
 @keyframes slideR{from{transform:translateX(-36px);opacity:.2}to{transform:none;opacity:1}}
 .grab{display:none}
+@media (max-width:760px){
+  .d-only,.fbar .fhint,.fbar .fopen,.fbar .f-end{display:none!important}
+  .m-only{display:inline}
+  .mfocus{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .mfocus .fbar{height:52px;padding:0 6px 0 18px;gap:10px}
+  .mfocus .fbar .ftext{font-size:15px}
+  .mfocus .fbar .ftime{font-size:15px}
+  .mfocus .plus-big{width:52px;height:52px}
+  .mprog{padding:10px 6px 0!important}
+  .day-panel{top:0;max-height:none;border-radius:0;padding-top:calc(6px + env(safe-area-inset-top))}
+  .dp-grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:0 auto 8px;flex:none}
+  .day-panel .drawer-h{margin-bottom:8px}
+  .dp-foot input{font-size:16px}
+  .day-panel .dp-foot{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));margin:0 -18px calc(-18px - env(safe-area-inset-bottom));padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:var(--surface);box-shadow:0 -10px 20px var(--surface)}
+  #dpEnd{display:block}
+  #dpEnd[hidden]{display:none}
+  .moves .to-focus{background:var(--accent-soft);color:var(--accent)}
+}
 @media (max-width:760px){
   .main.bucket-view .grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:calc(8px + env(safe-area-inset-top)) auto 0}
   .main.bucket-view .head{padding-top:10px}
@@ -549,15 +571,12 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
       <button class="plus plus-big" id="addBtn" aria-label="Новая задача" title="Новая задача — пробел"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="mdock">
-      <div class="mprog" id="mProgWrap"><div class="line"><div id="mLine"></div></div><span id="mProg"></span></div>
+      <div class="mfocus"><div class="fbar idle" id="mfbar" role="button" aria-label="Фокус бар"></div><button class="plus plus-big" id="mAddBtn" aria-label="Новая задача"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="mbuckets" id="mBuckets">
         <button data-mode="day" data-date="inbox"><span>Входящие</span><span class="n" id="mInboxN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
         <button data-mode="day" data-date="someday"><span>Когда-нибудь</span><span class="n" id="mSomedayN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
       </div>
-      <div class="madder">
-        <input id="mNewTask" placeholder="Новая задача" autocomplete="off" enterkeyhint="done">
-        <button class="plus" id="mAddBtn" aria-label="Новая задача"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-      </div>
+      <div class="mprog" id="mProgWrap"><div class="line"><div id="mLine"></div></div><span id="mProg"></span></div>
     </div>
   </main>
 </div>
@@ -603,7 +622,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 </div>
 
 <div class="modal" id="moveSheet" hidden>
-  <h3>Перенести</h3>
+  <h3>Задача</h3>
   <div class="sub2" id="moveSub"></div>
   <div class="moves" id="moves"></div>
   <div class="carry-cal" id="moveCal" hidden></div>
@@ -611,6 +630,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 </div>
 
 <aside class="drawer day-panel" id="dayPanel" hidden>
+  <div class="dp-grab" aria-hidden="true"></div>
   <div class="drawer-h"><b>Фокус бар</b><button class="x" data-close aria-label="Закрыть">×</button></div>
   <div class="dp-nav"><button id="dpPrev" aria-label="Предыдущий день">‹</button><div><div class="dp-day" id="dpDay"></div><div class="dp-date" id="dpDate"></div></div><button id="dpNext" aria-label="Следующий день">›</button></div>
   <div class="dp-sum"><div><b id="dpWork"></b><span>в работе</span></div><div><b id="dpPause"></b><span>паузы</span></div><div><b id="dpCount"></b><span>записей</span></div></div>
@@ -625,8 +645,8 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   <h4>Хронология</h4>
   <div class="tl" id="dpTl"></div>
   <div class="dp-foot">
-    <input id="dpIn" placeholder="Как в Tab: дело · идея … · не забыть … · пауза" autocomplete="off">
-    <button class="ghost-btn" id="dpDigest">Сводка дня</button>
+    <input id="dpIn" placeholder="Дело · идея … · не забыть … · пауза" autocomplete="off">
+    <div class="dp-btns"><button class="ghost-btn" id="dpEnd">Закончить день</button><button class="ghost-btn" id="dpDigest">Сводка дня</button></div>
   </div>
 </aside>
 
@@ -855,7 +875,6 @@ function render() {
   $("mProgWrap").hidden = bucket;
   $("mInboxN").textContent = active(INBOX).length || "";
   $("mSomedayN").textContent = active(SOMEDAY).length || "";
-  $("mNewTask").placeholder = view.date === INBOX ? "Новая задача во входящие" : view.date === SOMEDAY ? "Новая задача в «Когда-нибудь»" : "Новая задача";
   $("carryBtn").hidden = view.mode !== "day" || bucket || active(view.date).length === 0;
   sideCal._show(view.mode === "day" && !bucket ? view.date : TODAY);
 }
@@ -886,8 +905,7 @@ function quickAdd(inp) {
   inp.value = "";
   save(); render();
 }
-$("mNewTask").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { quickAdd($("mNewTask")); $("mNewTask").blur(); } });
-$("mAddBtn").onclick = () => { openCard(null, $("mNewTask").value.trim()); $("mNewTask").value = ""; };
+$("mAddBtn").onclick = () => openCard(null);
 $("addBtn").onclick = () => openCard(null);
 
 /* ---------- клики по доске ---------- */
@@ -1151,7 +1169,7 @@ function openMove(id) {
   const x = tasks.find(k => k.id === id);
   $("moveSub").textContent = x.title.length > 70 ? x.title.slice(0, 68) + "…" : x.title;
   const opts = [[INBOX, "Входящие"], [TODAY, "Сегодня"], [addDays(TODAY, 1), "Завтра"], [SOMEDAY, "Когда-нибудь"]];
-  $("moves").innerHTML = opts.map(([d, l]) => `<button data-move="${d}" ${x.date === d ? "disabled" : ""}><span>${l}</span><span class="k">${x.date === d ? "сейчас здесь" : isBucket(d) ? "" : parse(d).getDate() + " " + parse(d).toLocaleDateString("ru-RU", { month: "short" })}</span></button>`).join("")
+  $("moves").innerHTML = `<button data-move="focus" class="to-focus"><span>▶ В Фокус бар</span><span class="k">пойдёт время</span></button>` + opts.map(([d, l]) => `<button data-move="${d}" ${x.date === d ? "disabled" : ""}><span>${l}</span><span class="k">${x.date === d ? "сейчас здесь" : isBucket(d) ? "" : parse(d).getDate() + " " + parse(d).toLocaleDateString("ru-RU", { month: "short" })}</span></button>`).join("")
     + `<button data-move="pick"><span>Выбрать день…</span><span class="k">календарь</span></button>`;
   $("moveCal").hidden = true;
   $("scrim").hidden = false; $("moveSheet").hidden = false;
@@ -1159,6 +1177,7 @@ function openMove(id) {
 $("moves").addEventListener("click", e => {
   const b = e.target.closest("[data-move]"); if (!b || b.disabled) return;
   const x = tasks.find(k => k.id === moveId);
+  if (b.dataset.move === "focus") { closeAll(); return focusStartTask(x); }
   if (b.dataset.move === "pick") {
     $("moveCal").hidden = false;
     picker($("moveCal"), { value: isBucket(x.date) ? null : x.date, big: true, onPick: d => { closeAll(); moveTask(x, d); } });
@@ -1389,14 +1408,18 @@ const I_PAUSE = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4.5 2
 const I_STOP = '<svg width="13" height="13" viewBox="0 0 13 13"><rect x="2" y="2" width="9" height="9" rx="2" fill="currentColor"/></svg>';
 const I_PLAY = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4 2.5v9l7.5-4.5z" fill="currentColor"/></svg>';
 function paintFbar() {
-  const c = focusNow(), el = $("fbar");
-  const over = el.classList.contains("drop-target");
-  el.className = "fbar " + c.state + (over ? " drop-target" : "");
+  const c = focusNow();
   const open = '<span class="fopen">день ↗</span>';
-  if (c.state === "run") el.innerHTML = `<span class="fdot"></span><span class="ftext" title="${esc(c.entry.text)}">${esc(c.entry.text)}</span><span class="ftime" id="fTime">${clock(Date.now() - c.since)}</span><button class="fbtn" data-f="pause" title="Пауза">${I_PAUSE}</button><button class="fbtn" data-f="end" title="Закончить день">${I_STOP}</button>`;
-  else if (c.state === "pause") el.innerHTML = `<span class="fpause"></span><span class="ftext">Пауза${c.resume ? " · " + esc(c.resume.text) : ""}</span><span class="ftime" id="fTime">${clock(Date.now() - c.since)}</span>${c.resume ? `<button class="fbtn" data-f="resume" title="Продолжить">${I_PLAY}</button>` : ""}<button class="fbtn" data-f="end" title="Закончить день">${I_STOP}</button>`;
-  else if (c.state === "closed") el.innerHTML = `<span class="ftext">День закрыт в ${c.at} · в работе ${dur(c.work)}</span><span class="fhint">перетащи задачу или Tab</span>${open}`;
-  else el.innerHTML = `<span class="ftext">Перетащи задачу сюда — пойдёт время</span><span class="fhint">или Tab на маке</span>${open}`;
+  let h;
+  if (c.state === "run") h = `<span class="fdot"></span><span class="ftext" title="${esc(c.entry.text)}">${esc(c.entry.text)}</span><span class="ftime">${clock(Date.now() - c.since)}</span><button class="fbtn" data-f="pause" title="Пауза">${I_PAUSE}</button><button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "pause") h = `<span class="fpause"></span><span class="ftext">Пауза${c.resume ? " · " + esc(c.resume.text) : ""}</span><span class="ftime">${clock(Date.now() - c.since)}</span>${c.resume ? `<button class="fbtn" data-f="resume" title="Продолжить">${I_PLAY}</button>` : ""}<button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "closed") h = `<span class="ftext">День закрыт в ${c.at} · в работе ${dur(c.work)}</span><span class="fhint">перетащи задачу или Tab</span>${open}`;
+  else h = `<span class="ftext"><span class="d-only">Перетащи задачу сюда — пойдёт время</span><span class="m-only">Зажми задачу или нажми — сказать дело</span></span><span class="fhint">или Tab на маке</span>${open}`;
+  for (const el of [$("fbar"), $("mfbar")]) {
+    const over = el.classList.contains("drop-target");
+    el.className = "fbar " + c.state + (over ? " drop-target" : "");
+    el.innerHTML = h;
+  }
 }
 function paintFocus() { paintFbar(); if (!$("dayPanel").hidden) paintDay(); }
 
@@ -1410,7 +1433,7 @@ function focusTaskDone(x) {
   const c = focusNow();
   if (c.state === "run" && c.entry.taskId === x.id) { addEntry({ kind: "stop", text: "пауза" }); toast("Задача сделана — таймер на паузе"); }
 }
-$("fbar").addEventListener("click", e => {
+function onFbarClick(e) {
   const b = e.target.closest("[data-f]");
   if (!b) return openDay(TODAY);
   const f = b.dataset.f, c = focusNow();
@@ -1420,7 +1443,9 @@ $("fbar").addEventListener("click", e => {
     const en = addEntry({ kind: "stop", text: "стоп" });
     toastUndo("День закрыт", () => { entries = entries.filter(k => k.id !== en.id); saveEntries(); paintFocus(); });
   }
-});
+}
+$("fbar").addEventListener("click", onFbarClick);
+$("mfbar").addEventListener("click", onFbarClick);
 $("fbar").addEventListener("dragleave", e => { if (!$("fbar").contains(e.relatedTarget)) $("fbar").classList.remove("drop-target"); });
 
 /* ---------- панель «День» ---------- */
@@ -1450,8 +1475,27 @@ function paintDay() {
   };
   notes("todo", "dpTodo", "dpTodoN");
   notes("idea", "dpIdea", "dpIdeaN");
-  $("dpIn").parentElement.querySelector("input").hidden = d !== TODAY;
+  $("dpIn").hidden = d !== TODAY;
+  const st = focusNow().state;
+  $("dpEnd").hidden = d !== TODAY || !(st === "run" || st === "pause");
 }
+$("dpEnd").onclick = () => onFbarClick({ target: { closest: () => ({ dataset: { f: "end" } }) } });
+let dpPull = null;
+$("dayPanel").addEventListener("touchstart", e => {
+  if (!isMobile() || $("dayPanel").scrollTop > 0 || e.target.closest("input,.ed-row")) return;
+  dpPull = { y: e.touches[0].clientY, dy: 0 };
+}, { passive: true });
+$("dayPanel").addEventListener("touchmove", e => {
+  if (!dpPull) return;
+  dpPull.dy = Math.max(0, e.touches[0].clientY - dpPull.y);
+  if (dpPull.dy > 0 && $("dayPanel").scrollTop <= 0) { $("dayPanel").style.transition = "none"; $("dayPanel").style.transform = `translateY(${dpPull.dy * 0.7}px)`; }
+}, { passive: true });
+$("dayPanel").addEventListener("touchend", () => {
+  if (!dpPull) return;
+  const d = dpPull.dy; dpPull = null;
+  $("dayPanel").style.transition = "transform .2s"; $("dayPanel").style.transform = "";
+  if (d > 110) closeAll();
+}, { passive: true });
 $("dpPrev").onclick = () => { dpEdit = null; dpDate = addDays(dpDate, -1); paintDay(); };
 $("dpNext").onclick = () => { dpEdit = null; if (dpDate < TODAY) { dpDate = addDays(dpDate, 1); paintDay(); } };
 $("dayPanel").addEventListener("click", e => {
@@ -1506,9 +1550,9 @@ $("digestCopy").onclick = async () => { try { await navigator.clipboard.writeTex
 
 let lastMin = -1;
 setInterval(() => {
-  const c = focusNow(), t = $("fTime");
-  if (c.state !== ($("fbar").classList.contains(c.state) ? c.state : "")) return paintFbar();
-  if (t && c.since) t.textContent = clock(Date.now() - c.since);
+  const c = focusNow();
+  if (!$("fbar").classList.contains(c.state)) return paintFbar();
+  if (c.since) document.querySelectorAll(".fbar .ftime").forEach(t => t.textContent = clock(Date.now() - c.since));
   const m = new Date().getMinutes();
   if (m !== lastMin) { lastMin = m; if (!$("dayPanel").hidden && !dpEdit) paintDay(); }
 }, 1000);
