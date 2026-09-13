@@ -484,7 +484,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
-      <kbd>N</kbd> — новая задача · <kbd>Esc</kbd> — закрыть окно<br>
+      <kbd>Пробел</kbd> — новая задача · <kbd>Esc</kbd> — закрыть окно<br>
       Перетащи задачу в Фокус бар внизу — пойдёт время. На пункт меню слева — перенесётся. Задачи без времени двигай, чтобы менять порядок
     </div>
   </aside>
@@ -511,7 +511,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
     <div class="dock">
       <button class="pill" id="carryBtn">Перенести…</button>
       <div class="fbar idle" id="fbar" role="button" tabindex="0" aria-label="Фокус бар"></div>
-      <button class="plus plus-big" id="addBtn" aria-label="Новая задача" title="Новая задача — N"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <button class="plus plus-big" id="addBtn" aria-label="Новая задача" title="Новая задача — пробел"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="mdock">
       <div class="mprog" id="mProgWrap"><div class="line"><div id="mLine"></div></div><span id="mProg"></span></div>
@@ -1194,7 +1194,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") { if (!$("pov").hidden) return closePov(); if (dpEdit) { dpEdit = null; return paintDay(); } dismiss(); return; }
   const typing = e.target.closest?.("input,textarea,[contenteditable]");
   const overlay = [...document.querySelectorAll(".drawer,.modal,.auth,.pov")].some(el => !el.hidden);
-  if (!typing && !overlay && !e.metaKey && !e.ctrlKey && !e.altKey && (e.code === "KeyN") && !isMobile()) { e.preventDefault(); openCard(null); }
+  if (!typing && !overlay && !e.metaKey && !e.ctrlKey && !e.altKey && (e.code === "Space") && !isMobile()) { e.preventDefault(); openCard(null); }
 });
 
 /* закрыть окно; открытая карточка при этом сохраняется сама */
