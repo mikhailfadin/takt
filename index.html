@@ -177,9 +177,12 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .aim{width:46px;height:46px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);color:var(--accent);display:grid;place-items:center;flex:none;margin-top:2px}
 .aim:hover{background:var(--accent-soft)}
 .head-actions{display:flex;gap:8px;flex:none}
-.aim-inline{display:inline-grid;width:40px;height:40px;border-radius:12px;vertical-align:middle;margin:-6px 0 0 14px;letter-spacing:0}
+.aim-inline{display:inline-grid;width:40px;height:40px;border-radius:12px;vertical-align:middle;margin:-6px 0 0 8px;letter-spacing:0}
+.steps{display:inline-flex;gap:6px;vertical-align:middle;margin:-6px 0 0 16px;letter-spacing:0}
+.step{width:40px;height:40px;border-radius:12px;color:var(--dim)}
+.step:hover{color:var(--accent)}
 @media (min-width:761px){#aim{display:none!important}}
-@media (max-width:760px){.aim-inline{display:none!important}}
+@media (max-width:760px){.aim-inline,.steps{display:none!important}}
 
 .menu{position:absolute;top:calc(100% + 10px);left:0;z-index:30;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;width:300px;font-size:15px;font-weight:500;text-decoration:none;color:var(--text);cursor:default}
 .menu .opt{display:flex;justify-content:space-between;width:100%;padding:9px 12px;border-radius:8px}
@@ -402,7 +405,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
     <div class="grab" aria-hidden="true"></div>
     <header class="head">
       <div>
-        <h1><span id="h1Plain" hidden></span><span id="h1Lead">Задачи на </span><span class="period" id="period"><span id="periodText"></span><i>⌄</i><div class="menu" id="periodMenu" hidden></div></span><button class="aim aim-inline" id="aimInline" title="Сегодня" aria-label="Вернуться к сегодня" hidden><svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg></button></h1>
+        <h1><span id="h1Plain" hidden></span><span id="h1Lead">Задачи на </span><span class="period" id="period"><span id="periodText"></span><i>⌄</i><div class="menu" id="periodMenu" hidden></div></span><span class="steps" id="steps"><button class="aim step" id="stepPrev" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4 6 9l5 5"/></svg></button><button class="aim step" id="stepNext" aria-label="Вперёд"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 4 5 5-5 5"/></svg></button></span><button class="aim aim-inline" id="aimInline" title="Сегодня" aria-label="Вернуться к сегодня" hidden><svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg></button></h1>
         <div class="sub"><span id="dateLine"></span><div class="bar"><div id="barFill"></div></div><span class="pct" id="pct"></span><span class="prog" id="prog"></span></div>
       </div>
       <div class="head-actions">
@@ -662,6 +665,9 @@ function render() {
   $("board").classList.toggle("week-mode", view.mode === "week");
   $("aim").hidden = (view.mode === "day" && view.date === TODAY) || (bucket && isMobile());
   $("aimInline").hidden = view.mode === "day" && view.date === TODAY;
+  $("steps").hidden = bucket;
+  $("stepPrev").title = view.mode === "week" ? "Предыдущая неделя" : "Предыдущий день";
+  $("stepNext").title = view.mode === "week" ? "Следующая неделя" : "Следующий день";
   $("collapse").hidden = !(bucket && isMobile());
   document.querySelector(".main").classList.toggle("bucket-view", bucket);
   $("mBuckets").hidden = bucket;
@@ -1038,17 +1044,20 @@ $("pov").addEventListener("click", e => {
 /* ---------- свайп по дням ---------- */
 let sw = null;
 $("board").addEventListener("touchstart", e => {
-  if (!isMobile() || view.mode !== "day" || isBucket(view.date) || e.touches.length > 1) return;
+  if (!isMobile() || (view.mode === "day" && isBucket(view.date)) || e.touches.length > 1) return;
   sw = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
 $("board").addEventListener("touchend", e => {
   if (!sw) return;
   const dx = e.changedTouches[0].clientX - sw.x, dy = e.changedTouches[0].clientY - sw.y;
   sw = null;
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) shiftDay(dx < 0 ? 1 : -1);
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) step(dx < 0 ? 1 : -1);
 }, { passive: true });
-function shiftDay(n) {
-  go("day", addDays(view.date, n));
+function step(n) { view.mode === "week" ? shiftDay(n, true) : shiftDay(n); }
+$("stepPrev").onclick = () => step(-1);
+$("stepNext").onclick = () => step(1);
+function shiftDay(n, week = false) {
+  go(week ? "week" : "day", addDays(view.date, week ? 7 * n : n));
   const b = $("board"); b.classList.remove("slide-l", "slide-r"); void b.offsetWidth; b.classList.add(n > 0 ? "slide-l" : "slide-r");
 }
 
