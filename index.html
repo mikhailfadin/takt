@@ -283,6 +283,9 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .fbar.pause .ftime,.fbar.pause .ftext{color:var(--dock-mute)}
 .fbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--dock-accent);background:rgba(124,92,214,.12);flex:none}
 .fbtn:hover{background:rgba(124,92,214,.22)}
+.fbar .fmic{display:none}
+.fbar.listening .fmic{background:var(--todo);color:#fff;animation:pulse 1.2s infinite}
+.fbar.listening .ftext{color:var(--dock-text)!important;font-weight:500}
 .fbar .fopen{font:12px var(--mono);color:var(--dock-mute);white-space:nowrap;padding:0 8px}
 
 /* день: хронология */
@@ -491,6 +494,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 @media (max-width:760px){
   .d-only,.fbar .fhint,.fbar .fopen,.fbar .f-end{display:none!important}
   .m-only{display:inline}
+  .fbar .fmic{display:grid}
   .mfocus{display:flex;gap:8px;align-items:center;margin-bottom:10px}
   .mfocus .fbar{height:52px;padding:0 6px 0 18px;gap:10px}
   .mfocus .fbar .ftext{font-size:15px}
@@ -1406,18 +1410,20 @@ function spentOn(taskId) {
 
 const I_PAUSE = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4.5 2.5v9M9.5 2.5v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const I_STOP = '<svg width="13" height="13" viewBox="0 0 13 13"><rect x="2" y="2" width="9" height="9" rx="2" fill="currentColor"/></svg>';
+const I_MIC = '<svg width="17" height="17" viewBox="0 0 16 16"><rect x="5.3" y="1.3" width="5.4" height="8.6" rx="2.7" fill="currentColor"/><path d="M3 7.4a5 5 0 0 0 10 0M8 12.4v2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const I_PLAY = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M4 2.5v9l7.5-4.5z" fill="currentColor"/></svg>';
 function paintFbar() {
   const c = focusNow();
   const open = '<span class="fopen">день ↗</span>';
+  const mic = `<button class="fbtn fmic" data-f="mic" title="Сказать">${I_MIC}</button>`;
   let h;
-  if (c.state === "run") h = `<span class="fdot"></span><span class="ftext" title="${esc(c.entry.text)}">${esc(c.entry.text)}</span><span class="ftime">${clock(Date.now() - c.since)}</span><button class="fbtn" data-f="pause" title="Пауза">${I_PAUSE}</button><button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
-  else if (c.state === "pause") h = `<span class="fpause"></span><span class="ftext">Пауза${c.resume ? " · " + esc(c.resume.text) : ""}</span><span class="ftime">${clock(Date.now() - c.since)}</span>${c.resume ? `<button class="fbtn" data-f="resume" title="Продолжить">${I_PLAY}</button>` : ""}<button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
-  else if (c.state === "closed") h = `<span class="ftext">День закрыт в ${c.at} · в работе ${dur(c.work)}</span><span class="fhint">перетащи задачу или Tab</span>${open}`;
-  else h = `<span class="ftext"><span class="d-only">Перетащи задачу сюда — пойдёт время</span><span class="m-only">Зажми задачу или нажми — сказать дело</span></span><span class="fhint">или Tab на маке</span>${open}`;
+  if (c.state === "run") h = `<span class="fdot"></span><span class="ftext" title="${esc(c.entry.text)}">${esc(c.entry.text)}</span><span class="ftime">${clock(Date.now() - c.since)}</span>${mic}<button class="fbtn" data-f="pause" title="Пауза">${I_PAUSE}</button><button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "pause") h = `<span class="fpause"></span><span class="ftext">Пауза${c.resume ? " · " + esc(c.resume.text) : ""}</span><span class="ftime">${clock(Date.now() - c.since)}</span>${mic}${c.resume ? `<button class="fbtn" data-f="resume" title="Продолжить">${I_PLAY}</button>` : ""}<button class="fbtn f-end" data-f="end" title="Закончить день">${I_STOP}</button>`;
+  else if (c.state === "closed") h = `<span class="ftext">День закрыт в ${c.at} · в работе ${dur(c.work)}</span><span class="fhint">перетащи задачу или Tab</span>${open}${mic}`;
+  else h = `<span class="ftext"><span class="d-only">Перетащи задачу сюда — пойдёт время</span><span class="m-only">Нажми 🎙 и скажи дело</span></span><span class="fhint">или Tab на маке</span>${open}${mic}`;
   for (const el of [$("fbar"), $("mfbar")]) {
     const over = el.classList.contains("drop-target");
-    el.className = "fbar " + c.state + (over ? " drop-target" : "");
+    el.className = "fbar " + c.state + (over ? " drop-target" : "") + (voice ? " listening" : "");
     el.innerHTML = h;
   }
 }
@@ -1437,6 +1443,7 @@ function onFbarClick(e) {
   const b = e.target.closest("[data-f]");
   if (!b) return openDay(TODAY);
   const f = b.dataset.f, c = focusNow();
+  if (f === "mic") return startVoice();
   if (f === "pause") addEntry({ kind: "stop", text: "пауза" });
   if (f === "resume" && c.resume) addEntry({ kind: "task", text: c.resume.text, taskId: c.resume.taskId });
   if (f === "end") {
@@ -1529,8 +1536,42 @@ $("dpIn").addEventListener("keydown", e => {
   const c = classify($("dpIn").value);
   if (!c) return;
   addEntry(c); $("dpIn").value = "";
-  toast(c.kind === "idea" ? "Записано в идеи" : c.kind === "todo" ? "Записано в «Не забыть»" : c.kind === "stop" ? (isEnd(c.text) ? "День закрыт" : "Пауза") : "В фокусе: " + c.text);
+  entryToast(c);
 });
+function entryToast(c) {
+  toast(c.kind === "idea" ? "Записано в идеи" : c.kind === "todo" ? "Записано в «Не забыть»" : c.kind === "stop" ? (isEnd(c.text) ? "День закрыт" : "Пауза") : "В фокусе: " + c.text);
+}
+
+/* ---------- голос: кнопка 🎙 в Фокус баре (распознавание Safari), иначе — поле с микрофоном клавиатуры ---------- */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voice = null;
+function voiceFallback() {
+  openDay(TODAY);
+  $("dpIn").focus();
+  toast("Нажми микрофон на клавиатуре и говори");
+}
+function voiceText(t) { document.querySelectorAll(".fbar").forEach(el => { el.classList.add("listening"); const x = el.querySelector(".ftext"); if (x) x.textContent = t; }); }
+function startVoice() {
+  if (voice) { voice.stop(); return; }
+  if (!SpeechRec) return voiceFallback();
+  let said = "", failed = false;
+  try {
+    voice = new SpeechRec();
+    voice.lang = "ru-RU"; voice.interimResults = true; voice.continuous = false; voice.maxAlternatives = 1;
+    voice.onresult = e => { said = [...e.results].map(r => r[0].transcript).join(""); voiceText(said); };
+    voice.onerror = e => { failed = !["no-speech", "aborted"].includes(e.error); };
+    voice.onend = () => {
+      voice = null; paintFbar();
+      const c = classify(said);
+      if (c) { addEntry(c); entryToast(c); }
+      else if (failed) voiceFallback();
+      else toast("Ничего не услышал");
+    };
+    voice.start();
+    voiceText("Слушаю…");
+    navigator.vibrate?.(10);
+  } catch { voice = null; paintFbar(); voiceFallback(); }
+}
 
 function digest(day) {
   const { rows, work } = timeline(day);
