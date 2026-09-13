@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "6";
+var APP_V = "7";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -1566,26 +1566,45 @@ function voiceFallback() {
   toast("Нажми микрофон на клавиатуре и говори");
 }
 function voiceText(t) { document.querySelectorAll(".fbar").forEach(el => { el.classList.add("listening"); const x = el.querySelector(".ftext"); if (x) x.textContent = t; }); }
+// первое нажатие — слушаем, второе — сохраняем; паузы в речи запись не обрывают
+let voiceUser = false, voiceSaid = "", voiceFailed = false, voiceTimer = null;
 function startVoice() {
-  if (voice) { voice.stop(); return; }
+  if (voice) { voiceUser = true; voice.stop(); return; }
   if (!SpeechRec) return voiceFallback();
-  let said = "", failed = false;
+  voiceUser = false; voiceSaid = ""; voiceFailed = false;
+  clearTimeout(voiceTimer);
+  voiceTimer = setTimeout(() => { if (voice) { voiceUser = true; voice.stop(); } }, 180e3);
+  listen("");
+  navigator.vibrate?.(10);
+}
+function listen(prefix) {
   try {
-    voice = new SpeechRec();
-    voice.lang = "ru-RU"; voice.interimResults = true; voice.continuous = false; voice.maxAlternatives = 1;
-    voice.onresult = e => { said = [...e.results].map(r => r[0].transcript).join(""); voiceText(said); };
-    voice.onerror = e => { failed = !["no-speech", "aborted"].includes(e.error); };
-    voice.onend = () => {
-      voice = null; paintFbar();
-      const c = classify(said);
+    const rec = new SpeechRec();
+    voice = rec;
+    rec.lang = "ru-RU"; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+    rec.onresult = e => {
+      let acc = "";
+      for (const r of e.results) {
+        const t = r[0].transcript.trim();
+        if (!t) continue;
+        acc = acc && t.toLowerCase().startsWith(acc.toLowerCase()) ? t : acc && acc.toLowerCase().endsWith(t.toLowerCase()) ? acc : (acc ? acc + " " : "") + t;
+      }
+      voiceSaid = (prefix ? prefix + " " : "") + acc;
+      voiceText(voiceSaid + " · 🎙 ещё раз — сохранить");
+    };
+    rec.onerror = e => { if (!["no-speech", "aborted"].includes(e.error)) voiceFailed = true; };
+    rec.onend = () => {
+      if (voice !== rec) return;
+      if (!voiceUser && !voiceFailed) return listen(voiceSaid); // Safari сам остановил на паузе — слушаем дальше
+      voice = null; clearTimeout(voiceTimer); paintFbar();
+      const c = classify(voiceSaid);
       if (c) { addEntry(c); entryToast(c); }
-      else if (failed) voiceFallback();
+      else if (voiceFailed) voiceFallback();
       else toast("Ничего не услышал");
     };
-    voice.start();
-    voiceText("Слушаю…");
-    navigator.vibrate?.(10);
-  } catch { voice = null; paintFbar(); voiceFallback(); }
+    rec.start();
+    voiceText(prefix ? prefix + " · 🎙 ещё раз — сохранить" : "Слушаю… 🎙 ещё раз — сохранить");
+  } catch { voice = null; clearTimeout(voiceTimer); paintFbar(); voiceFallback(); }
 }
 
 function digest(day) {
