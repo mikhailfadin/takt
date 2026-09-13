@@ -10,6 +10,21 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>
+// автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
+var APP_V = "6";
+function checkUpdate() {
+  fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+    if (!d.v || d.v === APP_V) return;
+    var u = new URL(location.href);
+    if (u.searchParams.get("v") === d.v) return;
+    u.searchParams.set("v", d.v);
+    location.replace(u.toString());
+  }).catch(function () {});
+}
+checkUpdate();
+document.addEventListener("visibilitychange", function () { if (!document.hidden) checkUpdate(); });
+</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <title>Такт</title>
