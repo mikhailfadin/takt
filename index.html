@@ -42,9 +42,11 @@
   --on-accent:#FFFFFF;
   --check-mark:#1D1729;
   --dock-card:#FFFFFF;
+  --bucket-card:#FFFFFF;
   --dock-text:#1D1729;
   --dock-mute:#A39DB3;
   --dock-accent:#7C5CD6;
+  --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(124,92,214,.45);
   --r:14px;
   --sans:"Onest",-apple-system,"Segoe UI",sans-serif;
@@ -52,66 +54,70 @@
 }
 @media (prefers-color-scheme: dark){
 :root:not([data-theme="light"]){
-  --bg:#1B1523;
-  --side:#211A2C;
-  --surface:#2A2236;
-  --line:#3A3048;
-  --text:#F3EEF9;
-  --dim:#B3A9C2;
-  --mute:#7F7590;
-  --accent:#CFB0FF;
-  --check:#CFB0FF;
-  --check-empty:#3D3350;
-  --accent-soft:#3A2F4D;
+  --bg:#1C1526;
+  --side:#221A2E;
+  --surface:#2C223A;
+  --line:#40334F;
+  --text:#FFFFFF;
+  --dim:#D3C8E2;
+  --mute:#9A8DAE;
+  --accent:#DDBBFF;
+  --check:#DDBBFF;
+  --check-empty:#4A3C60;
+  --accent-soft:#3F3157;
   --warn:#F08A6B;
-  --done:#7F7590;
+  --done:#978AAA;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
   --shadow-lg:0 14px 40px rgba(0,0,0,.5);
   --hover:rgba(207,176,255,.08);
   --scrim:rgba(8,5,12,.55);
   --day:rgba(255,255,255,.035);
-  --glass:rgba(27,21,35,.74);
-  --fade:rgba(27,21,35,0);
-  --toast-bg:#F3EEF9;
+  --glass:rgba(28,21,38,.76);
+  --fade:rgba(28,21,38,0);
+  --toast-bg:#FFFFFF;
   --toast-fg:#1B1523;
-  --on-accent:#1B1523;
-  --check-mark:#1B1523;
+  --on-accent:#1C1526;
+  --check-mark:#1C1526;
   --dock-card:#EFE6F7;
-  --dock-text:#1B1523;
-  --dock-mute:#8A7F9A;
+  --bucket-card:#D8CBE6;
+  --dock-text:#1C1526;
+  --dock-mute:#7A6E8C;
   --dock-accent:#7C5CD6;
+  --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(0,0,0,.5);
 }
 }
 :root[data-theme="dark"]{
-  --bg:#1B1523;
-  --side:#211A2C;
-  --surface:#2A2236;
-  --line:#3A3048;
-  --text:#F3EEF9;
-  --dim:#B3A9C2;
-  --mute:#7F7590;
-  --accent:#CFB0FF;
-  --check:#CFB0FF;
-  --check-empty:#3D3350;
-  --accent-soft:#3A2F4D;
+  --bg:#1C1526;
+  --side:#221A2E;
+  --surface:#2C223A;
+  --line:#40334F;
+  --text:#FFFFFF;
+  --dim:#D3C8E2;
+  --mute:#9A8DAE;
+  --accent:#DDBBFF;
+  --check:#DDBBFF;
+  --check-empty:#4A3C60;
+  --accent-soft:#3F3157;
   --warn:#F08A6B;
-  --done:#7F7590;
+  --done:#978AAA;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
   --shadow-lg:0 14px 40px rgba(0,0,0,.5);
   --hover:rgba(207,176,255,.08);
   --scrim:rgba(8,5,12,.55);
   --day:rgba(255,255,255,.035);
-  --glass:rgba(27,21,35,.74);
-  --fade:rgba(27,21,35,0);
-  --toast-bg:#F3EEF9;
+  --glass:rgba(28,21,38,.76);
+  --fade:rgba(28,21,38,0);
+  --toast-bg:#FFFFFF;
   --toast-fg:#1B1523;
-  --on-accent:#1B1523;
-  --check-mark:#1B1523;
+  --on-accent:#1C1526;
+  --check-mark:#1C1526;
   --dock-card:#EFE6F7;
-  --dock-text:#1B1523;
-  --dock-mute:#8A7F9A;
+  --bucket-card:#D8CBE6;
+  --dock-text:#1C1526;
+  --dock-mute:#7A6E8C;
   --dock-accent:#7C5CD6;
+  --plus-fg:#FFFFFF;
   --badge-shadow:0 4px 12px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box}
@@ -168,6 +174,9 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .aim{width:46px;height:46px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);color:var(--accent);display:grid;place-items:center;flex:none;margin-top:2px}
 .aim:hover{background:var(--accent-soft)}
 .head-actions{display:flex;gap:8px;flex:none}
+.aim-inline{display:inline-grid;width:40px;height:40px;border-radius:12px;vertical-align:middle;margin:-6px 0 0 14px;letter-spacing:0}
+@media (min-width:761px){#aim{display:none!important}}
+@media (max-width:760px){.aim-inline{display:none!important}}
 
 .menu{position:absolute;top:calc(100% + 10px);left:0;z-index:30;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;width:300px;font-size:15px;font-weight:500;text-decoration:none;color:var(--text);cursor:default}
 .menu .opt{display:flex;justify-content:space-between;width:100%;padding:9px 12px;border-radius:8px}
@@ -176,6 +185,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .menu .pk{padding:8px 4px 2px;border-top:1px solid var(--line);margin-top:6px}
 
 .board{flex:1;overflow:auto;padding:6px 40px 120px}
+.board.week-mode{padding-left:24px;padding-right:24px}
 .cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start}
 .col h2{margin:0 0 10px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em;display:flex;gap:8px}
 .list{display:flex;flex-direction:column;gap:6px;min-height:60px}
@@ -208,14 +218,20 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .task.done .pbtn{display:none}
 
 /* неделя */
-.week{display:grid;grid-template-columns:repeat(7,minmax(168px,1fr));gap:12px;align-items:start}
-.day{background:var(--day);border-radius:16px;padding:10px;min-height:260px}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:stretch}
+.day{background:var(--day);border-radius:16px;padding:8px;min-height:calc(100vh - 250px);display:flex;flex-direction:column;min-width:0}
+.day .title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.day .list{flex:1}
+.day-add{margin-top:6px}
+.day-add input{width:100%;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:8px 10px;font-size:13px;outline:0;color:var(--text)}
+.day-add input::placeholder{color:var(--mute)}
+.day-add input:focus{border-style:solid;border-color:var(--accent);background:var(--surface)}
 .day.today{background:var(--accent-soft)}
 .day-h{display:flex;justify-content:space-between;align-items:baseline;padding:4px 6px 10px;cursor:pointer}
 .day-h b{font-weight:600;text-transform:capitalize}
 .day-h span{font:13px var(--mono);color:var(--mute)}
 .day.today .day-h span{color:var(--accent)}
-.day .task{grid-template-columns:22px 1fr;gap:9px;padding:9px 10px;font-size:13.5px;border-radius:11px}
+.day .task{grid-template-columns:20px minmax(0,1fr);gap:8px;padding:8px 9px;font-size:13px;border-radius:11px}
 .day .chk{width:20px;height:20px}
 .day .chk svg{width:11px}
 .day .task.prio .title{font-size:14.5px}
@@ -230,7 +246,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .adder input{flex:1;border:0;outline:0;background:none;font-size:16px;min-width:0}
 .adder input::placeholder{color:var(--dock-mute)}
 .adder .when{font:12px var(--mono);color:var(--dock-mute);white-space:nowrap}
-.plus{width:40px;height:40px;border-radius:50%;background:var(--dock-accent);color:#fff;display:grid;place-items:center;flex:none}
+.plus{width:40px;height:40px;border-radius:50%;background:var(--dock-accent);color:var(--plus-fg);display:grid;place-items:center;flex:none}
 .plus:hover{filter:brightness(1.08)}
 
 /* карточка задачи */
@@ -322,14 +338,15 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   .task .pbtn{display:none}
   .week{grid-template-columns:1fr;gap:10px}
   .day{min-height:0}
+  .day-add input{font-size:16px;padding:11px 12px}
   .dock{display:none}
   .mdock{display:block;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:18px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 78%,var(--fade))}
-  .mprog{display:flex;align-items:center;gap:10px;padding:0 6px 10px;font:12px var(--mono);color:var(--mute)}
-  .mprog .line{flex:1;height:2px;background:var(--line);border-radius:1px;overflow:hidden}
+  .mprog{display:flex;align-items:center;gap:11px;padding:0 6px 11px;font:14px var(--mono);color:var(--mute)}
+  .mprog .line{flex:1;height:2.5px;background:var(--line);border-radius:1px;overflow:hidden}
   .mprog .line div{height:100%;background:var(--accent);transition:width .25s}
   .mprog b{font-weight:500;color:var(--accent)}
   .mbuckets{display:flex;gap:8px;margin-bottom:10px}
-  .mbuckets button{flex:1;display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:14px;background:var(--dock-card);color:var(--dock-text);box-shadow:var(--shadow);font-weight:500;font-size:15px}
+  .mbuckets button{flex:1;display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:14px;background:var(--bucket-card);color:var(--dock-text);box-shadow:var(--shadow);font-weight:500;font-size:15px}
   .mbuckets .n{font:12px var(--mono);color:var(--dock-mute);margin-left:auto}
   .mbuckets svg{color:var(--dock-accent);flex:none}
   .madder{display:flex;align-items:center;height:52px;background:var(--dock-card);color:var(--dock-text);border-radius:26px;box-shadow:var(--shadow-lg);padding:0 6px 0 18px;gap:8px}
@@ -376,7 +393,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
     <div class="grab" aria-hidden="true"></div>
     <header class="head">
       <div>
-        <h1><span id="h1Plain" hidden></span><span id="h1Lead">Задачи на </span><span class="period" id="period"><span id="periodText"></span><i>⌄</i><div class="menu" id="periodMenu" hidden></div></span></h1>
+        <h1><span id="h1Plain" hidden></span><span id="h1Lead">Задачи на </span><span class="period" id="period"><span id="periodText"></span><i>⌄</i><div class="menu" id="periodMenu" hidden></div></span><button class="aim aim-inline" id="aimInline" title="Сегодня" aria-label="Вернуться к сегодня" hidden><svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg></button></h1>
         <div class="sub"><span id="dateLine"></span><div class="bar"><div id="barFill"></div></div><span class="pct" id="pct"></span><span class="prog" id="prog"></span></div>
       </div>
       <div class="head-actions">
@@ -628,11 +645,14 @@ function render() {
       return `<div class="day${d === TODAY ? " today" : ""}">
         <div class="day-h" data-open="${d}"><b>${p.toLocaleDateString("ru-RU", { weekday: "short" })}</b><span>${p.getDate()}</span></div>
         <div class="list" data-list="${d}">${[...active(d), ...doneOn(d)].map(x => taskHTML(x, true)).join("")}</div>
+        <div class="day-add"><input data-add-date="${d}" placeholder="+ Добавить" autocomplete="off" enterkeyhint="done"></div>
       </div>`;
     }).join("")}</div>`;
     $("addWhen").textContent = "на сегодня";
   }
+  $("board").classList.toggle("week-mode", view.mode === "week");
   $("aim").hidden = (view.mode === "day" && view.date === TODAY) || (bucket && isMobile());
+  $("aimInline").hidden = view.mode === "day" && view.date === TODAY;
   $("collapse").hidden = !(bucket && isMobile());
   document.querySelector(".main").classList.toggle("bucket-view", bucket);
   $("mBuckets").hidden = bucket;
@@ -651,7 +671,7 @@ function go(mode, date) {
 }
 $("collapse").onclick = () => { const b = view.back || { mode: "day", date: TODAY }; go(b.mode, b.date); };
 MQ.addEventListener("change", render);
-$("aim").onclick = () => go("day", TODAY);
+$("aim").onclick = $("aimInline").onclick = () => go("day", TODAY);
 
 /* ---------- быстрое добавление ---------- */
 const addDate = () => view.mode === "day" ? view.date : TODAY;
@@ -933,13 +953,25 @@ $("moves").addEventListener("click", e => {
   closeAll(); moveTask(x, b.dataset.move);
 });
 
+/* ---------- добавление в конкретный день недели ---------- */
+$("board").addEventListener("keydown", e => {
+  const inp = e.target.closest("[data-add-date]");
+  if (!inp || e.key !== "Enter" || e.isComposing) return;
+  const title = inp.value.trim(), date = inp.dataset.addDate;
+  if (!title) return;
+  tasks.push({ id: uid(), title, date, time: "", prio: false, done: false, doneAt: null, pos: Math.max(-1, ...onDate(date).map(k => k.pos)) + 1, carry: 0 });
+  save(); render();
+  document.querySelector(`[data-add-date="${date}"]`)?.focus();
+  toast(`Добавлено на ${rel(date)}`);
+});
+
 /* ---------- тема ---------- */
 const DARK_MQ = matchMedia("(prefers-color-scheme: dark)");
 const storedTheme = () => { try { return localStorage.getItem("takt-theme"); } catch { return null; } };
 const isDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : DARK_MQ.matches; };
 function paintTheme() {
   const dark = isDark();
-  document.querySelector('meta[name="theme-color"]').content = dark ? "#1B1523" : "#F7F5FB";
+  document.querySelector('meta[name="theme-color"]').content = dark ? "#1C1526" : "#F7F5FB";
   $("themeBtn").innerHTML = dark ? SUN : MOON;
   $("themeBtn").title = dark ? "Светлая тема" : "Тёмная тема";
 }
