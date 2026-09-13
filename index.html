@@ -39,6 +39,7 @@
   --fade:rgba(247,245,251,0);
   --toast-bg:#1D1729;
   --toast-fg:#FFFFFF;
+  --toast-link:#C9B8F5;
   --on-accent:#FFFFFF;
   --check-mark:#1D1729;
   --dock-card:#FFFFFF;
@@ -76,6 +77,7 @@
   --fade:rgba(28,21,38,0);
   --toast-bg:#FFFFFF;
   --toast-fg:#1B1523;
+  --toast-link:#7C5CD6;
   --on-accent:#1C1526;
   --check-mark:#1C1526;
   --dock-card:#EFE6F7;
@@ -110,6 +112,7 @@
   --fade:rgba(28,21,38,0);
   --toast-bg:#FFFFFF;
   --toast-fg:#1B1523;
+  --toast-link:#7C5CD6;
   --on-accent:#1C1526;
   --check-mark:#1C1526;
   --dock-card:#EFE6F7;
@@ -222,7 +225,8 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .day{background:var(--day);border-radius:16px;padding:8px;min-height:calc(100vh - 250px);display:flex;flex-direction:column;min-width:0}
 .day .title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .day .list{flex:1}
-.day-add{margin-top:6px}
+.day-add{margin:0 0 8px}
+.day.drop-target{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .day-add input{width:100%;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:8px 10px;font-size:13px;outline:0;color:var(--text)}
 .day-add input::placeholder{color:var(--mute)}
 .day-add input:focus{border-style:solid;border-color:var(--accent);background:var(--surface)}
@@ -309,6 +313,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .go{height:48px;border-radius:24px;background:var(--accent);color:var(--on-accent);font-weight:600;flex:none}
 .go:disabled{opacity:.45;cursor:default}
 
+.toast .undo{margin-left:16px;font-weight:600;color:var(--toast-link);text-decoration:underline;text-underline-offset:3px}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;box-shadow:var(--shadow)}
 /* перенести (долгое нажатие) */
 .moves{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;flex:none}
@@ -336,6 +341,10 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
   .col+.col{margin-top:20px}
   .task{padding:12px;gap:12px;user-select:none;-webkit-user-select:none}
   .task .pbtn{display:none}
+  .task{align-items:center}
+  .task .title,.day .title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:0}
+  .task .meta{padding-top:0}
+  .task .chk{margin-top:0}
   .week{grid-template-columns:1fr;gap:10px}
   .day{min-height:0}
   .day-add input{font-size:16px;padding:11px 12px}
@@ -644,8 +653,8 @@ function render() {
       const p = parse(d);
       return `<div class="day${d === TODAY ? " today" : ""}">
         <div class="day-h" data-open="${d}"><b>${p.toLocaleDateString("ru-RU", { weekday: "short" })}</b><span>${p.getDate()}</span></div>
-        <div class="list" data-list="${d}">${[...active(d), ...doneOn(d)].map(x => taskHTML(x, true)).join("")}</div>
         <div class="day-add"><input data-add-date="${d}" placeholder="+ Добавить" autocomplete="off" enterkeyhint="done"></div>
+        <div class="list" data-list="${d}">${[...active(d), ...doneOn(d)].map(x => taskHTML(x, true)).join("")}</div>
       </div>`;
     }).join("")}</div>`;
     $("addWhen").textContent = "на сегодня";
@@ -665,6 +674,13 @@ function render() {
 }
 
 function toast(t) { const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 2200); }
+function toastUndo(t, undo) {
+  const el = $("toast");
+  el.innerHTML = `<span>${esc(t)}</span><button class="undo">Отменить</button>`;
+  el.hidden = false; clearTimeout(el._t);
+  el.querySelector(".undo").onclick = () => { clearTimeout(el._t); el.hidden = true; undo(); };
+  el._t = setTimeout(() => el.hidden = true, 3000);
+}
 function go(mode, date) {
   if (isBucket(date) && !(view.mode === "day" && isBucket(view.date))) view.back = { mode: view.mode, date: view.date };
   view.mode = mode; view.date = date; closeMenu(); render(); $("board").scrollTop = 0;
@@ -877,10 +893,12 @@ document.addEventListener("dragover", e => {
     if (x.date === bucket.dataset.date) return;
     e.preventDefault(); clearDrop(); bucket.classList.add("drop-target"); return;
   }
-  const list = e.target.closest("[data-list]");
-  if (!list || dragTimed) return;
+  const col = e.target.closest(".day");
+  const list = col ? col.querySelector("[data-list]") : e.target.closest("[data-list]");
+  if (!list) return;
   const x = tasks.find(k => k.id === dragId);
-  if (list.dataset.list !== x.date) return;
+  if (list.dataset.list !== x.date) { e.preventDefault(); clearDrop(); col?.classList.add("drop-target"); return; }
+  if (dragTimed) return;
   e.preventDefault(); clearDrop();
   const el = e.target.closest(".task[data-free]");
   if (el && el.dataset.id !== dragId) { const r = el.getBoundingClientRect(); el.classList.add(e.clientY < r.top + r.height / 2 ? "drop-before" : "drop-after"); }
@@ -895,8 +913,11 @@ document.addEventListener("drop", e => {
     moveTask(x, bucket.dataset.date);
     return;
   }
-  const list = e.target.closest("[data-list]");
-  if (!list || dragTimed || list.dataset.list !== x.date) return;
+  const col = e.target.closest(".day");
+  const list = col ? col.querySelector("[data-list]") : e.target.closest("[data-list]");
+  if (!list) return;
+  if (list.dataset.list !== x.date) { e.preventDefault(); clearDrop(); moveTask(x, list.dataset.list); return; }
+  if (dragTimed) return;
   e.preventDefault();
   const target = e.target.closest(".task[data-free]");
   const arr = active(x.date).filter(k => !k.time && k.id !== x.id);
@@ -910,11 +931,14 @@ document.addEventListener("drop", e => {
 /* ---------- перенос одной задачи: общий для перетаскивания и долгого нажатия ---------- */
 function moveTask(x, to) {
   if (!x || x.date === to) return;
+  const prev = { date: x.date, time: x.time, pos: x.pos };
   x.date = to;
   if (isBucket(to)) x.time = "";
   x.pos = Math.max(-1, ...onDate(to).filter(k => k.id !== x.id).map(k => k.pos)) + 1;
   save(); render();
-  toast(to === INBOX ? "Перенесено во входящие" : to === SOMEDAY ? "Перенесено в «Когда-нибудь»" : `Перенесено на ${rel(to)}`);
+  toastUndo(to === INBOX ? "Перенесено во входящие" : to === SOMEDAY ? "Перенесено в «Когда-нибудь»" : `Перенесено на ${rel(to)}`, () => {
+    Object.assign(x, prev); save(); render(); toast("Перенос отменён");
+  });
 }
 
 /* ---------- долгое нажатие на телефоне: куда перенести ---------- */
