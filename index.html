@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F7F5FB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "7";
+var APP_V = "8";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -221,6 +221,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .board{flex:1;overflow:auto;padding:6px 40px 120px}
 .board.week-mode{padding-left:24px;padding-right:24px}
 .cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start}
+.cols.one{grid-template-columns:minmax(0,760px)}
 .col h2{margin:0 0 10px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em;display:flex;gap:8px}
 .list{display:flex;flex-direction:column;gap:6px;min-height:60px}
 .empty{color:var(--mute);padding:18px 4px;font-size:14px}
@@ -413,7 +414,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 /* барабан времени */
 .wheels{position:relative;display:flex;justify-content:center;align-items:center;gap:8px;height:200px}
 .band{position:absolute;left:40px;right:40px;top:80px;height:40px;border-radius:10px;background:var(--accent-soft)}
-.wheel{position:relative;z-index:1;width:86px;height:200px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}
+.wheel{position:relative;z-index:1;width:86px;height:200px;overflow-y:auto;overscroll-behavior:contain;touch-action:none;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}
 .wheel::-webkit-scrollbar{display:none}
 .wheel .pad{height:80px}
 .wheel .it{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;font:500 22px var(--mono);color:var(--mute);cursor:pointer;transition:color .1s}
@@ -452,6 +453,11 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 
 .mdock{display:none}
 .task{-webkit-touch-callout:none}
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
+.arch-link{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:14px;padding:12px 14px;border-radius:12px;color:var(--dim);font-weight:500;border:1px dashed var(--line)}
+.arch-link:hover{color:var(--accent);border-color:var(--check)}
+.arch-link .n{font:12px var(--mono);color:var(--mute)}
+.task .when-done{font:12px var(--mono);color:var(--mute);white-space:nowrap}
 
 @media (max-width:760px){
   .app{grid-template-columns:1fr;height:100dvh}
@@ -726,7 +732,15 @@ const parse = s => new Date(s + "T12:00:00");
 const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
 const TODAY = iso(new Date());
 const INBOX = "inbox", SOMEDAY = "someday";
-const isBucket = d => d === INBOX || d === SOMEDAY;
+const ARCHIVE = "archive", ARCHIVE_DAYS = 5;
+const isBucket = d => d === INBOX || d === SOMEDAY || d === ARCHIVE;
+// сделанное во входящих не висит в списке, а лежит в архиве ARCHIVE_DAYS дней
+const archived = () => tasks.filter(x => x.date === INBOX && x.done).sort((a, b) => (b.doneAt || "").localeCompare(a.doneAt || ""));
+function purgeArchive() {
+  const edge = Date.now() - ARCHIVE_DAYS * 864e5, before = tasks.length;
+  tasks = tasks.filter(x => !(x.date === INBOX && x.done && x.doneAt && Date.parse(x.doneAt) < edge));
+  if (tasks.length !== before) save();
+}
 const MQ = matchMedia("(max-width: 760px)");
 const isMobile = () => MQ.matches;
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -780,6 +794,7 @@ const cap = s => s[0].toUpperCase() + s.slice(1);
 function rel(d) {
   if (d === INBOX) return "входящие";
   if (d === SOMEDAY) return "когда-нибудь";
+  if (d === ARCHIVE) return "архив";
   if (d === TODAY) return "сегодня";
   if (d === addDays(TODAY, 1)) return "завтра";
   if (d === addDays(TODAY, -1)) return "вчера";
@@ -844,12 +859,12 @@ function progress(list) {
 }
 
 function render() {
-  const nav = [["Входящие", "day", INBOX], null, ["Сегодня", "day", TODAY], ["Завтра", "day", addDays(TODAY, 1)], ["Неделя", "week", TODAY], null, ["Когда-нибудь", "day", SOMEDAY]];
+  const nav = [["Входящие", "day", INBOX], null, ["Сегодня", "day", TODAY], ["Завтра", "day", addDays(TODAY, 1)], ["Неделя", "week", TODAY], null, ["Когда-нибудь", "day", SOMEDAY], ["Архив", "day", ARCHIVE]];
   $("nav").innerHTML = nav.map(it => {
     if (!it) return '<div class="sep"></div>';
     const [l, m, d] = it;
     const on = view.mode === m && (m === "week" || view.date === d);
-    const n = m === "day" ? active(d).length : "";
+    const n = m === "day" && d !== ARCHIVE ? active(d).length : "";
     return `<button class="${on ? "on" : ""}" data-mode="${m}" data-date="${d}"><span>${l}</span><span class="n">${n || ""}</span></button>`;
   }).join("");
 
@@ -859,9 +874,17 @@ function render() {
   if (view.mode === "day") {
     $("periodText").textContent = rel(view.date);
     $("h1Plain").textContent = cap(rel(view.date));
-    $("dateLine").textContent = view.date === INBOX ? "Без дня — разбирай каждый день" : view.date === SOMEDAY ? "Отложено — возвращайся раз в неделю" : long(view.date);
+    $("dateLine").textContent = view.date === INBOX ? "Без дня — разбирай каждый день" : view.date === SOMEDAY ? "Отложено — возвращайся раз в неделю" : view.date === ARCHIVE ? `Сделанное из входящих — хранится ${ARCHIVE_DAYS} дней` : long(view.date);
     progress(onDate(view.date));
     const a = active(view.date), d = doneOn(view.date);
+    if (view.date === INBOX || view.date === ARCHIVE) {
+      const arch = archived();
+      $("prog").textContent = view.date === INBOX ? (a.length ? `осталось ${a.length}` : "пусто") : (arch.length ? `${arch.length} в архиве` : "пусто");
+      $("board").innerHTML = view.date === INBOX
+        ? `<div class="cols one"><div class="col"><h2>Осталось <span>${a.length}</span></h2><div class="list" data-list="${INBOX}">${a.map(x => taskHTML(x)).join("") || '<div class="empty">Входящие пусты — всё разобрано.</div>'}</div>
+            <button class="arch-link" data-mode="day" data-date="${ARCHIVE}"><span>Архив</span><span class="n">${arch.length || ""}</span></button></div></div>`
+        : `<div class="cols one"><div class="col"><div class="list">${arch.map(x => taskHTML(x)).join("") || '<div class="empty">Архив пуст.</div>'}</div></div></div>`;
+    } else
     $("board").innerHTML = `<div class="cols">
       <div class="col"><h2>Осталось <span>${a.length}</span></h2><div class="list" data-list="${view.date}">${a.map(x => taskHTML(x)).join("") || `<div class="empty">${view.date === INBOX ? "Входящие пусты — всё разобрано." : view.date === SOMEDAY ? "Здесь пока ничего не отложено." : "На этот день задач нет — добавь внизу."}</div>`}</div></div>
       <div class="col"><h2>Сделано <span>${d.length}</span></h2><div class="list">${d.map(x => taskHTML(x)).join("") || '<div class="empty">Пока ничего.</div>'}</div></div>
@@ -908,14 +931,15 @@ function toastUndo(t, undo) {
 }
 function go(mode, date) {
   if (isBucket(date) && !(view.mode === "day" && isBucket(view.date))) view.back = { mode: view.mode, date: view.date };
+  if (date === ARCHIVE && view.date === INBOX) view.archBack = true; else if (date !== ARCHIVE) view.archBack = false;
   view.mode = mode; view.date = date; closeMenu(); render(); $("board").scrollTop = 0;
 }
-$("collapse").onclick = () => { const b = view.back || { mode: "day", date: TODAY }; go(b.mode, b.date); };
+$("collapse").onclick = () => { if (view.date === ARCHIVE && view.archBack) return go("day", INBOX); const b = view.back || { mode: "day", date: TODAY }; go(b.mode, b.date); };
 MQ.addEventListener("change", render);
 $("aim").onclick = $("aimInline").onclick = () => go("day", TODAY);
 
 /* ---------- быстрое добавление ---------- */
-const addDate = () => view.mode === "day" ? view.date : TODAY;
+const addDate = () => view.mode === "day" ? (view.date === ARCHIVE ? INBOX : view.date) : TODAY;
 function quickAdd(inp) {
   const v = inp.value.trim();
   if (!v) return;
@@ -939,12 +963,23 @@ document.addEventListener("click", e => {
   const task = t.closest(".task");
   if (task) {
     const x = tasks.find(k => k.id === task.dataset.id);
-    const act = t.closest("[data-act]")?.dataset.act;
-    if (act === "toggle") { x.done = !x.done; x.doneAt = x.done ? new Date().toISOString() : null; if (x.done) focusTaskDone(x); save(); render(); return; }
+    let act = t.closest("[data-act]")?.dataset.act;
+    if (!act && isMobile() && e.clientX - task.getBoundingClientRect().left < 72) act = "toggle";
+    if (act === "toggle") return toggleTask(x);
     if (act === "prio") { x.prio = !x.prio; save(); render(); return; }
     return openCard(x.id);
   }
 });
+
+function toggleTask(x) {
+  x.done = !x.done; x.doneAt = x.done ? new Date().toISOString() : null;
+  if (x.done) focusTaskDone(x);
+  save(); render();
+  if (x.date === INBOX) {
+    if (x.done) toastUndo("В архиве", () => { x.done = false; x.doneAt = null; save(); render(); });
+    else if (view.date === ARCHIVE) toast("Вернул во входящие");
+  }
+}
 
 /* ---------- выбор периода ---------- */
 $("period").addEventListener("click", e => {
@@ -1017,7 +1052,26 @@ let wheelTouched = false;
 function markWheel(el) { const i = wheelIdx(el); [...el.querySelectorAll(".it")].forEach((it, k) => it.classList.toggle("cur", k === i)); }
 for (const [id, vals] of [["whH", HOURS], ["whM", MINS]]) {
   const el = $(id);
-  el.addEventListener("scroll", () => markWheel(el));
+  el.addEventListener("scroll", () => { markWheel(el); if (wheelTouched && draft && !$("edTimePop").hidden) { $("edTimeVal").textContent = wheelTime(); } });
+  // пальцем крутим сами: на iPhone вложенная прокрутка внутри листа иногда не срабатывает
+  let drag = null;
+  el.addEventListener("touchstart", e => { drag = { y: e.touches[0].clientY, top: el.scrollTop, t: Date.now(), v: 0, ly: e.touches[0].clientY }; el.style.scrollSnapType = "none"; }, { passive: true });
+  el.addEventListener("touchmove", e => {
+    if (!drag) return;
+    e.preventDefault();
+    const y = e.touches[0].clientY, now = Date.now();
+    drag.v = (drag.ly - y) / Math.max(1, now - drag.t); drag.ly = y; drag.t = now;
+    el.scrollTop = drag.top + (drag.y - y);
+  }, { passive: false });
+  const release = () => {
+    if (!drag) return;
+    const target = Math.max(0, Math.min(vals.length - 1, Math.round((el.scrollTop + drag.v * 120) / ITEM)));
+    drag = null;
+    el.scrollTo({ top: target * ITEM, behavior: "smooth" });
+    setTimeout(() => { el.style.scrollSnapType = ""; markWheel(el); if (draft) $("edTimeVal").textContent = wheelTime(); }, 320);
+  };
+  el.addEventListener("touchend", release, { passive: true });
+  el.addEventListener("touchcancel", release, { passive: true });
   ["pointerdown", "wheel", "touchstart", "keydown"].forEach(ev => el.addEventListener(ev, () => { wheelTouched = true; }, { passive: true }));
   el.addEventListener("click", e => { const it = e.target.closest(".it"); if (it) el.scrollTo({ top: vals.indexOf(it.dataset.v) * ITEM, behavior: "smooth" }); });
 }
@@ -1033,15 +1087,16 @@ $("edTimeRow").onclick = () => {
   else { const now = new Date(); now.setMinutes(now.getMinutes() + 15); h = pad(now.getHours()); m = q15(now.getMinutes()); }
   wheelTouched = false;
   requestAnimationFrame(() => { fillWheel($("whH"), HOURS, h); fillWheel($("whM"), MINS, m); });
+  if (!draft.time) $("edTimeVal").textContent = `${h}:${m}`;
 };
 $("timeOk").onclick = () => { draft.time = wheelTime(); drawCard(); closePops(); };
-$("timeClear").onclick = () => { draft.time = ""; drawCard(); closePops(); };
+$("timeClear").onclick = () => { draft.time = ""; wheelTouched = false; drawCard(); closePops(); };
 $("edPrioRow").onclick = () => { draft.prio = !draft.prio; drawCard(); };
 
 function saveCard() {
   const title = $("edTitle").value.trim();
   if (!title) return;
-  if (!$("edTimePop").hidden && wheelTouched) draft.time = wheelTime();
+  if (!$("edTimePop").hidden) draft.time = wheelTime();
   if (isBucket(draft.date)) draft.time = "";
   if (editId) {
     const x = tasks.find(k => k.id === editId);
@@ -1173,7 +1228,7 @@ let lp = null, lpFired = false, moveId = null;
 document.addEventListener("pointerdown", e => {
   if (!isMobile()) return;
   const el = e.target.closest(".task");
-  if (!el || e.target.closest(".chk")) return;
+  if (!el || e.target.closest(".chk") || e.clientX - el.getBoundingClientRect().left < 72) return;
   const x = tasks.find(k => k.id === el.dataset.id);
   if (!x || x.done) return;
   clearTimeout(lp?.t);
@@ -1296,7 +1351,7 @@ function dismiss() {
   if ($("drawer").hidden || !draft) return closeAll();
   const title = $("edTitle").value.trim();
   if (!title) return closeAll();
-  const time = !$("edTimePop").hidden && wheelTouched ? wheelTime() : draft.time;
+  const time = !$("edTimePop").hidden ? wheelTime() : draft.time;
   const x = editId ? tasks.find(k => k.id === editId) : null;
   const changed = !x || x.title !== title || x.date !== draft.date || (x.time || "") !== (isBucket(draft.date) ? "" : time) || !!x.prio !== !!draft.prio;
   changed ? saveCard() : closeAll();
@@ -1632,6 +1687,8 @@ setInterval(() => {
   if (m !== lastMin) { lastMin = m; if (!$("dayPanel").hidden && !dpEdit) paintDay(); }
 }, 1000);
 
+purgeArchive();
+setInterval(purgeArchive, 36e5);
 render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
