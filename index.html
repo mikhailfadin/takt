@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "9";
+var APP_V = "10";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -199,7 +199,8 @@ input,textarea{font:inherit;color:inherit}
 
 /* ---------- боковая панель ---------- */
 .side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;gap:22px;overflow:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px;margin:-4px 0;border-radius:10px;color:inherit;text-decoration:none;align-self:flex-start}
+.brand:hover{background:var(--hover)}
 .brand b{font-size:22px;font-weight:700;letter-spacing:-.02em}
 .brand .mark{height:20px;width:auto;color:var(--text);flex:none}
 .nav{display:flex;flex-direction:column;gap:2px}
@@ -607,7 +608,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 <body>
 <div class="app">
   <aside class="side">
-    <div class="brand" aria-label="Такт"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
+    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Такт» в новой вкладке" aria-label="Такт — открыть в новой вкладке"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></a>
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
