@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "8";
+var APP_V = "9";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -151,6 +151,44 @@ document.addEventListener("visibilitychange", function () { if (!document.hidden
   --idea:#FFC23D;
   --idea-bg:rgba(255,194,61,.09);
 }
+:root[data-theme="mocha"]{
+  --bg:#1e1e2e;
+  --side:#181825;
+  --surface:#313244;
+  --line:#45475a;
+  --text:#cdd6f4;
+  --dim:#bac2de;
+  --mute:#7f849c;
+  --accent:#cba6f7;
+  --check:#a6e3a1;
+  --check-empty:#45475a;
+  --accent-soft:rgba(203,166,247,.16);
+  --warn:#f38ba8;
+  --done:#6c7086;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --shadow-lg:0 14px 40px rgba(0,0,0,.5);
+  --hover:rgba(203,166,247,.08);
+  --scrim:rgba(17,17,27,.6);
+  --day:rgba(255,255,255,.03);
+  --glass:rgba(30,30,46,.78);
+  --fade:rgba(30,30,46,0);
+  --toast-bg:#cdd6f4;
+  --toast-fg:#1e1e2e;
+  --toast-link:#8839ef;
+  --on-accent:#1e1e2e;
+  --check-mark:#1e1e2e;
+  --dock-card:#cba6f7;
+  --bucket-card:#b4befe;
+  --dock-text:#1e1e2e;
+  --dock-mute:#45475a;
+  --dock-accent:#8839ef;
+  --plus-fg:#FFFFFF;
+  --badge-shadow:0 4px 12px rgba(0,0,0,.5);
+  --todo:#f38ba8;
+  --todo-bg:rgba(243,139,168,.10);
+  --idea:#f9e2af;
+  --idea-bg:rgba(249,226,175,.08);
+}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--text);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
@@ -204,7 +242,14 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .bar div{height:100%;background:var(--check);border-radius:3px;transition:width .25s}
 .aim{width:46px;height:46px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);color:var(--accent);display:grid;place-items:center;flex:none;margin-top:2px}
 .aim:hover{background:var(--accent-soft)}
-.head-actions{display:flex;gap:8px;flex:none}
+.head-actions{display:flex;gap:8px;flex:none;position:relative}
+.theme-menu{position:absolute;top:calc(100% + 10px);right:0;z-index:35;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px;width:230px}
+.theme-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:9px;font-weight:500;text-align:left}
+.theme-menu button:hover{background:var(--accent-soft)}
+.theme-menu button.on{color:var(--accent)}
+.theme-menu .sw3{display:flex;flex:none}
+.theme-menu .sw3 i{width:12px;height:12px;border-radius:50%;margin-right:-3px;box-shadow:0 0 0 1.5px var(--surface)}
+.theme-menu .ck{margin-left:auto;font-size:14px}
 .aim-inline{display:inline-grid;width:40px;height:40px;border-radius:12px;vertical-align:middle;margin:-6px 0 0 8px;letter-spacing:0}
 .steps{display:inline-flex;gap:6px;vertical-align:middle;margin:-6px 0 0 16px;letter-spacing:0}
 .step{width:40px;height:40px;border-radius:12px;color:var(--dim)}
@@ -584,7 +629,8 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg>
       </button>
       <button class="aim acct" id="acctBtn" aria-label="Аккаунт и синхронизация" hidden><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="7" r="3.3"/><path d="M3.8 17c.9-3 3.3-4.6 6.2-4.6s5.3 1.6 6.2 4.6"/></svg><i class="dot" id="syncDot"></i></button>
-      <button class="aim" id="themeBtn" aria-label="Сменить тему"></button>
+      <button class="aim" id="themeBtn" aria-label="Тема оформления"></button>
+      <div class="theme-menu" id="themeMenu" hidden></div>
       </div>
     </header>
 
@@ -1274,20 +1320,32 @@ $("board").addEventListener("keydown", e => {
 
 /* ---------- тема ---------- */
 const DARK_MQ = matchMedia("(prefers-color-scheme: dark)");
+const THEMES = [
+  { id: "light", name: "Светлая", meta: "#F7F5FB", dots: ["#F7F5FB", "#7C5CD6", "#C9B8F5"] },
+  { id: "dark", name: "Лаванда", meta: "#1C1526", dots: ["#1C1526", "#DDBBFF", "#EFE6F7"] },
+  { id: "mocha", name: "Catppuccin Mocha", meta: "#1e1e2e", dots: ["#1e1e2e", "#cba6f7", "#a6e3a1"] },
+];
+const PALETTE = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a7.5 7.5 0 0 0 0 15c1.1 0 1.6-.8 1.6-1.6 0-1-.8-1.3-.8-2.2 0-.9.7-1.4 1.6-1.4h1.7a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5z"/><circle cx="6.3" cy="9" r=".9" fill="currentColor"/><circle cx="8.6" cy="5.9" r=".9" fill="currentColor"/><circle cx="12.3" cy="6" r=".9" fill="currentColor"/></svg>';
 const storedTheme = () => { try { return localStorage.getItem("takt-theme"); } catch { return null; } };
-const isDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : DARK_MQ.matches; };
+const currentTheme = () => document.documentElement.dataset.theme || (DARK_MQ.matches ? "dark" : "light");
+const isDark = () => currentTheme() !== "light";
 function paintTheme() {
-  const dark = isDark();
-  document.querySelector('meta[name="theme-color"]').content = dark ? "#1C1526" : "#F7F5FB";
-  $("themeBtn").innerHTML = dark ? SUN : MOON;
-  $("themeBtn").title = dark ? "Светлая тема" : "Тёмная тема";
+  const t = THEMES.find(x => x.id === currentTheme()) || THEMES[0];
+  document.querySelector('meta[name="theme-color"]').content = t.meta;
+  $("themeBtn").innerHTML = PALETTE;
+  $("themeBtn").title = "Тема: " + t.name;
+  $("themeMenu").innerHTML = THEMES.map(x => `<button data-theme-id="${x.id}" class="${x.id === t.id ? "on" : ""}"><span class="sw3">${x.dots.map(c => `<i style="background:${c}"></i>`).join("")}</span><span>${x.name}</span><span class="ck">${x.id === t.id ? "✓" : ""}</span></button>`).join("");
 }
-$("themeBtn").onclick = () => {
-  const next = isDark() ? "light" : "dark";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("takt-theme", next); } catch {}
+$("themeBtn").onclick = e => { e.stopPropagation(); $("themeMenu").hidden = !$("themeMenu").hidden; };
+$("themeMenu").addEventListener("click", e => {
+  e.stopPropagation();
+  const b = e.target.closest("[data-theme-id]"); if (!b) return;
+  document.documentElement.dataset.theme = b.dataset.themeId;
+  try { localStorage.setItem("takt-theme", b.dataset.themeId); } catch {}
+  $("themeMenu").hidden = true;
   paintTheme();
-};
+});
+document.addEventListener("pointerdown", e => { if (!e.target.closest("#themeMenu,#themeBtn")) $("themeMenu").hidden = true; });
 DARK_MQ.addEventListener("change", () => { if (!storedTheme()) paintTheme(); });
 paintTheme();
 
