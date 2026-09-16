@@ -1,6 +1,6 @@
 {
-  "name": "Такт",
-  "short_name": "Такт",
+  "name": "Быстродел",
+  "short_name": "Быстродел",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

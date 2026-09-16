@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#F7F5FB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Такт">
+<meta name="apple-mobile-web-app-title" content="Быстродел">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "10";
+var APP_V = "11";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -27,7 +27,7 @@ document.addEventListener("visibilitychange", function () { if (!document.hidden
 </script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon.png">
-<title>Такт</title>
+<title>Быстродел</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -189,6 +189,45 @@ document.addEventListener("visibilitychange", function () { if (!document.hidden
   --idea:#f9e2af;
   --idea-bg:rgba(249,226,175,.08);
 }
+:root[data-theme="ugol"]{
+  --bg:#0B0E0C;
+  --side:#070908;
+  --surface:#161C18;
+  --line:#2A322D;
+  --text:#F4F7F3;
+  --dim:#BCC6BF;
+  --mute:#75827A;
+  --accent:#F5C630;
+  --check:#F5C630;
+  --check-empty:#2E3732;
+  --accent-soft:rgba(245,198,48,.13);
+  --warn:#FF7A5C;
+  --done:#5E6A63;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg:0 14px 40px rgba(0,0,0,.6);
+  --hover:rgba(245,198,48,.07);
+  --scrim:rgba(0,0,0,.62);
+  --day:rgba(255,255,255,.025);
+  --glass:rgba(11,14,12,.8);
+  --fade:rgba(11,14,12,0);
+  --toast-bg:#F5C630;
+  --toast-fg:#151003;
+  --toast-link:#151003;
+  --on-accent:#151003;
+  --check-mark:#151003;
+  --dock-card:#F5C630;
+  --bucket-card:#DDB126;
+  --dock-text:#151003;
+  --dock-mute:#6B5610;
+  --dock-accent:#151003;
+  --plus-fg:#F5C630;
+  --badge-shadow:0 4px 12px rgba(0,0,0,.6);
+  --todo:#FF5F52;
+  --todo-bg:rgba(255,95,82,.11);
+  --idea:#F5C630;
+  --idea-bg:rgba(245,198,48,.10);
+}
+:root[data-theme="ugol"] .fbtn{background:rgba(21,16,3,.10)}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--text);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
@@ -332,7 +371,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .plus:hover{filter:brightness(1.08)}
 .plus-big{width:54px;height:54px;box-shadow:var(--shadow-lg)}
 
-/* фокус бар */
+/* такт */
 .fbar{flex:1;min-width:0;display:flex;align-items:center;gap:12px;height:54px;background:var(--dock-card);color:var(--dock-text);border-radius:27px;box-shadow:var(--shadow-lg);padding:0 8px 0 22px;cursor:pointer;transition:box-shadow .15s,transform .15s}
 .fbar:hover{transform:translateY(-1px)}
 .fbar.drop-target{box-shadow:inset 0 0 0 2px var(--dock-accent),var(--shadow-lg);transform:scale(1.01)}
@@ -608,12 +647,12 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 <body>
 <div class="app">
   <aside class="side">
-    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Такт» в новой вкладке" aria-label="Такт — открыть в новой вкладке"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></a>
+    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Быстродел» в новой вкладке" aria-label="Быстродел — открыть в новой вкладке"><b>Быстродел</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></a>
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
       <kbd>Пробел</kbd> — новая задача · <kbd>Esc</kbd> — закрыть окно<br>
-      Перетащи задачу в Фокус бар внизу — пойдёт время. На пункт меню слева — перенесётся. Задачи без времени двигай, чтобы менять порядок
+      Перетащи задачу в Такт внизу — пойдёт время. На пункт меню слева — перенесётся. Задачи без времени двигай, чтобы менять порядок
     </div>
   </aside>
 
@@ -639,11 +678,11 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 
     <div class="dock">
       <button class="pill" id="carryBtn">Перенести…</button>
-      <div class="fbar idle" id="fbar" role="button" tabindex="0" aria-label="Фокус бар"></div>
+      <div class="fbar idle" id="fbar" role="button" tabindex="0" aria-label="Такт"></div>
       <button class="plus plus-big" id="addBtn" aria-label="Новая задача" title="Новая задача — пробел"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="mdock">
-      <div class="mfocus"><div class="fbar idle" id="mfbar" role="button" aria-label="Фокус бар"></div><button class="plus plus-big" id="mAddBtn" aria-label="Новая задача"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+      <div class="mfocus"><div class="fbar idle" id="mfbar" role="button" aria-label="Такт"></div><button class="plus plus-big" id="mAddBtn" aria-label="Новая задача"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="mbuckets" id="mBuckets">
         <button data-mode="day" data-date="inbox"><span>Входящие</span><span class="n" id="mInboxN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
         <button data-mode="day" data-date="someday"><span>Когда-нибудь</span><span class="n" id="mSomedayN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
@@ -703,7 +742,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 <aside class="drawer day-panel" id="dayPanel" hidden>
   <div class="dp-grab" aria-hidden="true"></div>
-  <div class="drawer-h"><b>Фокус бар</b><button class="x" data-close aria-label="Закрыть">×</button></div>
+  <div class="drawer-h"><b>Такт</b><button class="x" data-close aria-label="Закрыть">×</button></div>
   <div class="dp-nav"><button id="dpPrev" aria-label="Предыдущий день">‹</button><div><div class="dp-day" id="dpDay"></div><div class="dp-date" id="dpDate"></div></div><button id="dpNext" aria-label="Следующий день">›</button></div>
   <div class="dp-sum"><div><b id="dpWork"></b><span>в работе</span></div><div><b id="dpPause"></b><span>паузы</span></div><div><b id="dpCount"></b><span>записей</span></div></div>
   <div class="nbox todo">
@@ -739,7 +778,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 <div class="auth" id="auth" hidden>
   <form class="auth-card" id="authForm" autocomplete="on">
-    <div class="auth-logo"><b>Такт</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
+    <div class="auth-logo"><b>Быстродел</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
     <p class="auth-sub" id="authSub">Войди, чтобы задачи были и на телефоне, и на компьютере</p>
     <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="Почта" required>
     <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" minlength="6" required>
@@ -1290,7 +1329,7 @@ function openMove(id) {
   const x = tasks.find(k => k.id === id);
   $("moveSub").textContent = x.title.length > 70 ? x.title.slice(0, 68) + "…" : x.title;
   const opts = [[INBOX, "Входящие"], [TODAY, "Сегодня"], [addDays(TODAY, 1), "Завтра"], [SOMEDAY, "Когда-нибудь"]];
-  $("moves").innerHTML = `<button data-move="focus" class="to-focus"><span>▶ В Фокус бар</span><span class="k">пойдёт время</span></button>` + opts.map(([d, l]) => `<button data-move="${d}" ${x.date === d ? "disabled" : ""}><span>${l}</span><span class="k">${x.date === d ? "сейчас здесь" : isBucket(d) ? "" : parse(d).getDate() + " " + parse(d).toLocaleDateString("ru-RU", { month: "short" })}</span></button>`).join("")
+  $("moves").innerHTML = `<button data-move="focus" class="to-focus"><span>▶ В Такт</span><span class="k">пойдёт время</span></button>` + opts.map(([d, l]) => `<button data-move="${d}" ${x.date === d ? "disabled" : ""}><span>${l}</span><span class="k">${x.date === d ? "сейчас здесь" : isBucket(d) ? "" : parse(d).getDate() + " " + parse(d).toLocaleDateString("ru-RU", { month: "short" })}</span></button>`).join("")
     + `<button data-move="pick"><span>Выбрать день…</span><span class="k">календарь</span></button>`;
   $("moveCal").hidden = true;
   $("scrim").hidden = false; $("moveSheet").hidden = false;
@@ -1322,6 +1361,7 @@ $("board").addEventListener("keydown", e => {
 /* ---------- тема ---------- */
 const DARK_MQ = matchMedia("(prefers-color-scheme: dark)");
 const THEMES = [
+  { id: "ugol", name: "Уголь", meta: "#0B0E0C", dots: ["#0B0E0C", "#F5C630", "#F4F7F3"] },
   { id: "light", name: "Светлая", meta: "#F7F5FB", dots: ["#F7F5FB", "#7C5CD6", "#C9B8F5"] },
   { id: "dark", name: "Лаванда", meta: "#1C1526", dots: ["#1C1526", "#DDBBFF", "#EFE6F7"] },
   { id: "mocha", name: "Catppuccin Mocha", meta: "#1e1e2e", dots: ["#1e1e2e", "#cba6f7", "#a6e3a1"] },
@@ -1470,7 +1510,7 @@ mainEl.addEventListener("touchend", () => {
   if (d > 110) $("collapse").click();
 }, { passive: true });
 
-/* ---------- Фокус бар: журнал рабочего дня (логика VibeBar) ----------
+/* ---------- Такт: журнал рабочего дня (логика VibeBar) ----------
    запись: { id, at: "ГГГГ-ММ-ДДTЧЧ:ММ:СС" (местное время), kind: task|idea|todo|stop, text, taskId?, closed? }
    дело длится до следующего дела или паузы; день обрезается в 23:00 */
 const FLS = "takt-focus-v1";
@@ -1603,7 +1643,7 @@ function paintDay() {
     const tt = r.end == null ? hhmm(r.e.at) : r.open ? `${hhmm(r.e.at)}–сейчас` : `${hhmm(r.e.at)}–${stamp(new Date(r.end)).slice(11, 16)}`;
     const label = stop ? (r.end == null && isEnd(r.e.text) ? "день закрыт" : esc(r.e.text.toLowerCase())) : esc(r.e.text);
     return `<div class="tl-row${stop ? " stop" : ""}${r.open ? " open" : ""}" data-eid="${r.e.id}"><span class="tt">${tt}</span><span class="tx">${label}${r.e.taskId ? '<span class="link">задача</span>' : ""}</span><span class="td">${r.end == null ? "" : dur(r.d)}</span></div>`;
-  }).join("") || `<div class="dp-empty">${d === TODAY ? "Пока пусто. Перетащи задачу в Фокус бар или скажи дело через Tab." : "В этот день записей нет."}</div>`;
+  }).join("") || `<div class="dp-empty">${d === TODAY ? "Пока пусто. Перетащи задачу в Такт или скажи дело через Tab." : "В этот день записей нет."}</div>`;
   const notes = (kind, el, n) => {
     const list = entries.filter(e => e.kind === kind && e.at.startsWith(d)).sort((a, b) => (!!a.closed - !!b.closed) || a.at.localeCompare(b.at));
     $(n).textContent = (kind === "todo" ? list.filter(e => !e.closed).length : list.length) || "";
@@ -1671,7 +1711,7 @@ function entryToast(c) {
   toast(c.kind === "idea" ? "Записано в идеи" : c.kind === "todo" ? "Записано в «Не забыть»" : c.kind === "stop" ? (isEnd(c.text) ? "День закрыт" : "Пауза") : "В фокусе: " + c.text);
 }
 
-/* ---------- голос: кнопка 🎙 в Фокус баре (распознавание Safari), иначе — поле с микрофоном клавиатуры ---------- */
+/* ---------- голос: кнопка 🎙 в Такте (распознавание Safari), иначе — поле с микрофоном клавиатуры ---------- */
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let voice = null;
 function voiceFallback() {
