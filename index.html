@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "20";
+var APP_V = "22";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -26,6 +26,7 @@ checkUpdate();
 document.addEventListener("visibilitychange", function () { if (!document.hidden) checkUpdate(); });
 </script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" href="icon.png">
 <title>Быстродел</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -241,7 +242,7 @@ input,textarea{font:inherit;color:inherit}
 .brand{display:flex;align-items:center;gap:10px;padding:4px 8px;margin:-4px 0;border-radius:10px;color:inherit;text-decoration:none;align-self:flex-start}
 .brand:hover{background:var(--hover)}
 .brand b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.brand .mark{height:24px;width:auto;color:var(--accent);flex:none}
+.brand .mark{height:28px;width:auto;color:var(--accent);flex:none}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:10px;text-align:left;color:var(--dim);font-weight:500}
 .nav button:hover{background:var(--hover);color:var(--text)}
@@ -755,6 +756,11 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-done-bar .q-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
 .q-done-bar .q-t span{white-space:normal}
 .q-pick.static.studied{color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);opacity:1}
+.q-mins{display:flex;flex-direction:column;align-items:stretch;gap:3px;width:58px}
+.q-mins button{height:24px;border-radius:8px;font:600 14px/24px var(--mono);color:var(--dim);background:var(--accent-soft)}
+.q-mins button:hover{color:var(--accent)}
+.q-mins button.on{background:var(--accent);color:var(--on-accent)}
+.q-mins small{text-align:center;font-size:10px;color:var(--mute);line-height:1}
 .q-fold{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
 .q-fold .n{color:var(--dim)}
 .q-fold .q-chev{margin-left:0}
@@ -868,6 +874,8 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-under-b.q-del{background:var(--todo);color:#fff}
   .q-under-b.q-study{background:#3FA66B;color:#fff}
   .q-mini-ring{width:50px;height:50px}
+  .q-mins{width:50px}
+  .q-mins button{height:28px;line-height:28px}
   .q-mini-ring b{font-size:12px}
   .q-run-acts{padding:0 10px 10px}
   .q-done-bar .q-go{width:44px;height:44px;padding:0;justify-content:center;margin:0}
@@ -896,13 +904,20 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-state .q-focus-acts{flex-direction:column}
   .q-state .q-big,.q-state .q-soft{width:100%}
 }
+/* водяной знак «Такт» в полоске */
+.fbar{position:relative;overflow:hidden}
+.fbar>*{position:relative;z-index:1}
+.fbar::before,.fbar::after{position:absolute;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.12;z-index:0}
+.fbar::before{content:"";left:calc(50% - 74px);width:38px;height:38px;background:var(--dock-text);-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%22190%20160%20870%20870%22%3E%3Cg%20fill%3D%22%23000%22%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%280%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%2845%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%2890%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28180%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28225%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28270%20625%20605%29%22/%3E%3Cg%20fill-opacity%3D%22.5%22%20transform%3D%22rotate%28-45%20625%20605%29%22%3E%3Crect%20x%3D%22565%22%20y%3D%22215%22%20width%3D%22120%22%20height%3D%22775%22%20rx%3D%2260%22/%3E%3Crect%20x%3D%22475%22%20y%3D%22168%22%20width%3D%22300%22%20height%3D%22125%22%20rx%3D%2255%22/%3E%3C/g%3E%3Ccircle%20cx%3D%22625%22%20cy%3D%22605%22%20r%3D%2295%22/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%22190%20160%20870%20870%22%3E%3Cg%20fill%3D%22%23000%22%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%280%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%2845%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%2890%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28180%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28225%20625%20605%29%22/%3E%3Crect%20x%3D%22550%22%20y%3D%22195%22%20width%3D%22150%22%20height%3D%22320%22%20rx%3D%2275%22%20transform%3D%22rotate%28270%20625%20605%29%22/%3E%3Cg%20fill-opacity%3D%22.5%22%20transform%3D%22rotate%28-45%20625%20605%29%22%3E%3Crect%20x%3D%22565%22%20y%3D%22215%22%20width%3D%22120%22%20height%3D%22775%22%20rx%3D%2260%22/%3E%3Crect%20x%3D%22475%22%20y%3D%22168%22%20width%3D%22300%22%20height%3D%22125%22%20rx%3D%2255%22/%3E%3C/g%3E%3Ccircle%20cx%3D%22625%22%20cy%3D%22605%22%20r%3D%2295%22/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+.fbar::after{content:"Такт";left:calc(50% - 28px);font:800 30px/1 var(--sans);letter-spacing:-.03em;color:var(--dock-text)}
+@media (max-width:760px){.fbar::before{left:auto;right:124px;width:26px;height:26px}.fbar::after{left:auto;right:62px;font-size:21px}}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side">
-    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Быстродел» в новой вкладке" aria-label="Быстродел — открыть в новой вкладке"><svg class="mark" viewBox="150 300 1000 580" aria-hidden="true"><defs><mask id="bird1" maskUnits="userSpaceOnUse" x="100" y="250" width="1100" height="700"><rect x="100" y="250" width="1100" height="700" fill="#fff"/><path d="M607 497 L797 542 L668 569 L776 688 L524 580 L652 577 Z" fill="#000" stroke="#000" stroke-width="12" stroke-linejoin="round"/><circle cx="955" cy="541" r="44" fill="#000"/><circle cx="936" cy="546" r="14" fill="#fff"/></mask></defs><g mask="url(#bird1)" fill="currentColor"><path d="M250 342 L742 415 L703 342 Q948 350 1043 522 L1118 572 L1047 596 Q985 732 834 770 L902 800 L756 858 L788 812 Q640 772 392 858 L588 692 L306 514 L494 497 Z" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/><rect x="170" y="655" width="320" height="64" rx="32"/><rect x="236" y="733" width="200" height="58" rx="29"/></g></svg><b>Быстродел</b></a>
+    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Быстродел» в новой вкладке" aria-label="Быстродел — открыть в новой вкладке"><svg class="mark" viewBox="330 250 620 700" aria-hidden="true"><path d="M455 282 H735 C820 282 880 345 880 425 C880 505 822 568 760 568 H603 Q592 568 594 557 L645 352 L445 600 H543 Q556 600 551 612 L430 870 L546 757 Q551 752 560 752 H735 C750 752 762 739 762 722 C762 705 750 692 735 692 H612 Q598 692 606 683 L688 603 Q693 598 702 598 H795 C868 598 920 660 920 745 C920 842 842 920 730 920 H388 Q372 920 376 904 L433 690 H378 Q358 690 362 671 L436 297 Q439 282 455 282 Z" fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/></svg><b>Быстродел</b></a>
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
@@ -1034,7 +1049,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 <div class="auth" id="auth" hidden>
   <form class="auth-card" id="authForm" autocomplete="on">
-    <div class="auth-logo"><svg class="mark" viewBox="150 300 1000 580" aria-hidden="true"><defs><mask id="bird2" maskUnits="userSpaceOnUse" x="100" y="250" width="1100" height="700"><rect x="100" y="250" width="1100" height="700" fill="#fff"/><path d="M607 497 L797 542 L668 569 L776 688 L524 580 L652 577 Z" fill="#000" stroke="#000" stroke-width="12" stroke-linejoin="round"/><circle cx="955" cy="541" r="44" fill="#000"/><circle cx="936" cy="546" r="14" fill="#fff"/></mask></defs><g mask="url(#bird2)" fill="currentColor"><path d="M250 342 L742 415 L703 342 Q948 350 1043 522 L1118 572 L1047 596 Q985 732 834 770 L902 800 L756 858 L788 812 Q640 772 392 858 L588 692 L306 514 L494 497 Z" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/><rect x="170" y="655" width="320" height="64" rx="32"/><rect x="236" y="733" width="200" height="58" rx="29"/></g></svg><b>Быстродел</b></div>
+    <div class="auth-logo"><svg class="mark" viewBox="330 250 620 700" aria-hidden="true"><path d="M455 282 H735 C820 282 880 345 880 425 C880 505 822 568 760 568 H603 Q592 568 594 557 L645 352 L445 600 H543 Q556 600 551 612 L430 870 L546 757 Q551 752 560 752 H735 C750 752 762 739 762 722 C762 705 750 692 735 692 H612 Q598 692 606 683 L688 603 Q693 598 702 598 H795 C868 598 920 660 920 745 C920 842 842 920 730 920 H388 Q372 920 376 904 L433 690 H378 Q358 690 362 671 L436 297 Q439 282 455 282 Z" fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/></svg><b>Быстродел</b></div>
     <p class="auth-sub" id="authSub">Войди, чтобы задачи были и на телефоне, и на компьютере</p>
     <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="Почта" required>
     <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" minlength="6" required>
@@ -2058,6 +2073,6 @@ render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
-<script src="quick.js?v=10"></script>
+<script src="quick.js?v=12"></script>
 </body>
 </html>

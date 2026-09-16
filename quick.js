@@ -14,7 +14,9 @@ const qDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).
 const qYesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return qDay(d); };
 const qDoneDay = n => n.updated_at ? qDay(new Date(n.updated_at)) : "";
 const qIsDone = n => n.status === "сделано" || n.status === "изучено";
-const qStudy = n => n.kind === "материал" && !(n.steps || []).length;
+const Q_STUDY_KINDS = ["материал", "исследование", "инструмент"];
+const qIsArticle = n => Q_STUDY_KINDS.includes(n.kind) || String(n.folder || "").startsWith("WIKI");
+const qStudy = n => qIsArticle(n) && !(n.steps || []).length;
 const qPlural = (n, one, few, many) => n % 10 === 1 && n % 100 !== 11 ? one : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many);
 const qStore = (k, v) => { try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 const qRead = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
@@ -109,6 +111,7 @@ const qGroup = n => {
   if (n.kind === "не забыть") return "Не забыть";
   if (n.quick) return "Быстрые";
   if (["актуальное", "в работе", "когда-нибудь"].includes(n.status)) return n.status[0].toUpperCase() + n.status.slice(1);
+  if (qIsArticle(n)) return "Полезные статьи";
   return { "идея": "Идеи", "цель": "Цели", "материал": "Полезные статьи", "контент": "Контент", "гипотеза": "Гипотезы", "разобрать": "Разобрать" }[n.kind] || "Новые";
 };
 const qFind = key => {
@@ -293,7 +296,7 @@ function qItemBasket(e) {
         <button class="q-under-b q-del" data-q-trash="${e.note.id}">${QI.x}<span>Удалить</span></button>
       </div>
       <div class="q-line q-item-line">
-        ${run ? qMiniRing() : `<button class="q-min" data-q-min="${e.key}" title="Оценка: нажми, чтобы сменить 5 ↔ 15">${min}<small>мин</small></button>`}
+        ${run ? qMiniRing() : `<div class="q-mins" title="Сколько минут на подход">${[5, 15].map(m => `<button class="${min === m ? "on" : ""}" data-q-setmin="${m}" data-key="${e.key}">${m}</button>`).join("")}<small>мин</small></div>`}
         <button class="q-t q-t-btn" data-q-open="b:${e.key}" title="Что за дело"><b>${qe(e.step ? e.step.t : e.note.title)}</b><span>${meta}</span></button>
         <div class="q-acts">${acts}</div>
       </div>
@@ -401,14 +404,14 @@ function qBody() {
   if (Q.tab === "basket") {
     if (basket.length) {
       const min = basket.reduce((a, e) => a + (e.note.minutes === 15 ? 15 : 5), 0);
-      return award + `<div class="q-sum"><span>${basket.length} ${qPlural(basket.length, "дело", "дела", "дел")} · около ${min} мин</span><span class="q-sum-hint">Оценку ставишь ты: нажми на минуты</span></div>
+      return award + `<div class="q-sum"><span>${basket.length} ${qPlural(basket.length, "дело", "дела", "дел")} · около ${min} мин</span><span class="q-sum-hint">Слева у дела выбери 5 или 15 минут</span></div>
         <div class="list">${basket.sort((a, b) => (t && b.key === t.key) - (t && a.key === t.key)).map(qItemBasket).join("")}</div>`;
     }
     const doneToday = Q.notes.filter(n => qIsDone(n) && qDoneDay(n) === qDay()).length;
     if (doneToday) return award + `<div class="q-state cleared"><div class="q-cheer">${Q_CHEERS[doneToday % Q_CHEERS.length]}</div>
       <p>Сегодня закрыто ${doneToday} ${qPlural(doneToday, "дело", "дела", "дел")} · серия ${qStreak().n} ${qPlural(qStreak().n, "день", "дня", "дней")}</p>
       <div class="q-focus-acts"><button class="q-soft" data-q-tab="all">Взять ещё из «Всё»</button></div></div>`;
-    return `<div class="q-state"><b>Пока ничего не в работе</b><p>Набери дела на сегодня: из «Всё из хранилища» или попроси подобрать быстрые.</p>
+    return `<div class="q-state"><b>Пока ничего не в работе</b><p>Набери дела на сегодня: из «Всё из хранилища» или попроси подобрать быстрые. У каждого дела выберешь 5 или 15 минут и нажмёшь «Поехали».</p>
       <div class="q-focus-acts"><button class="q-big" data-q-suggest>${QI.bolt}<span>Подобрать быстрые</span></button><button class="q-soft" data-q-tab="all">Открыть «Всё»</button></div></div>`;
   }
   if (Q.tab === "remember") {
@@ -589,7 +592,11 @@ $("board").addEventListener("click", e => {
   if (d.qOpen) { Q.open[d.qOpen] = !Q.open[d.qOpen]; return render(); }
   if (d.qToggle) { const n = Q.notes.find(x => x.id === d.qToggle); return n && qToggleBasket(n); }
   if (d.qStep) { const [id, i] = d.qStep.split(":"); const n = Q.notes.find(x => x.id === id); return n && qToggleStep(n, +i); }
-  if (d.qMin) { const en = qFind(d.qMin); return en && qMinutes(en); }
+  if (d.qSetmin) {
+    const en = qFind(d.key), m = +d.qSetmin;
+    if (!en || en.note.minutes === m) return;
+    en.note.minutes = m; qChange(en.note, "minutes", { minutes: m }); return render();
+  }
   if (d.qStart) { const en = qFind(d.qStart); return en && qStart(en); }
   if (d.qDrop) {
     const en = qFind(d.qDrop); if (!en) return;
