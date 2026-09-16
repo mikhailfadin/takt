@@ -3,11 +3,11 @@
 
 const Q = {
   notes: [], settings: null, loaded: false, loading: false, error: "", at: null,
-  tab: "basket", q: "", open: {}, folds: {}, award: null, tick: null, poll: null,
+  tab: "basket", q: "", open: {}, folds: {}, award: null, tick: null, poll: null, hidden: new Set(), sel: null,
 };
 const Q_ORDER = ["Быстрые", "Актуальное", "В работе", "Новые", "Не забыть", "Идеи", "Цели", "WIKI", "Контент", "Гипотезы", "Разобрать", "Когда-нибудь"];
 const Q_RANKS = [[0, "Авральщик"], [10, "Догоняющий"], [30, "Успевающий"], [70, "На шаг впереди"], [150, "Разгребатель"]];
-const Q_CHEERS = ["Разобрал всё, что взял", "Корзина пуста, и голова тоже", "Взял и сделал. Редкое дело", "Сегодня разгребли — завтра не копится"];
+const Q_CHEERS = ["Разобрал всё, что взял", "Список пуст, и голова тоже", "Взял и сделал. Редкое дело", "Сегодня разгребли — завтра не копится"];
 
 const qe = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const qDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -36,7 +36,7 @@ async function qLoad(force) {
     ]);
     if (notes.error) throw notes.error;
     const keys = qStepKeys();
-    Q.notes = (notes.data || []).map(n => ({ ...n, steps: (n.steps || []).map((s, i) => ({ ...s, basket: keys.has(`${n.id}:${i}`) && !s.done })) }));
+    Q.notes = (notes.data || []).filter(n => !Q.hidden.has(n.id)).map(n => ({ ...n, steps: (n.steps || []).map((s, i) => ({ ...s, basket: keys.has(`${n.id}:${i}`) && !s.done })) }));
     Q.settings = (set.data && set.data[0]) || { streak: 0, streak_day: null };
     Q.error = ""; Q.at = Date.now();
   } catch (e) {
@@ -92,13 +92,13 @@ function qRank() {
 function qToggleBasket(note) {
   note.basket = !note.basket; note.basket_day = qDay();
   qChange(note, "basket", { basket: note.basket });
-  render(); toast(note.basket ? `В корзине: ${note.title}` : `Убрано из корзины`);
+  render(); toast(note.basket ? `Сделать быстро: ${note.title}` : `Убрано из «Сделать быстро»`);
 }
 function qToggleStep(note, i) {
   const s = note.steps[i]; if (!s || s.done) return;
   s.basket = !s.basket;
   const keys = qStepKeys(); s.basket ? keys.add(`${note.id}:${i}`) : keys.delete(`${note.id}:${i}`); qSaveStepKeys(keys);
-  render(); toast(s.basket ? "Шаг в корзине" : "Шаг убран");
+  render(); toast(s.basket ? "Шаг в «Сделать быстро»" : "Шаг убран");
 }
 function qMinutes(entry) {
   const m = entry.note.minutes === 15 ? 5 : 15;
@@ -132,6 +132,26 @@ function qFinish(entry, { credit = true } = {}) {
   }
   if (credit) qCredit(note).then(() => render());
   return line;
+}
+
+/* ---------- удаление: заметка переезжает в папку «Корзина» хранилища, вернуть можно ---------- */
+function qTrash(ids) {
+  const gone = Q.notes.filter(n => ids.includes(n.id));
+  if (!gone.length) return;
+  gone.forEach(n => Q.hidden.add(n.id));
+  Q.notes = Q.notes.filter(n => !Q.hidden.has(n.id));
+  const t = qTimer();
+  if (t && gone.some(n => String(t.key).split(":")[0] === n.id)) qStore("bd-timer");
+  let undone = false;
+  const send = setTimeout(() => { if (!undone) gone.forEach(n => qChange(n, "trash", {})); }, 3300);
+  render();
+  const label = gone.length === 1 ? `В корзине: ${gone[0].title}` : `В корзину ${gone.length} ${qPlural(gone.length, "заметка", "заметки", "заметок")}`;
+  toastUndo(label, () => {
+    undone = true; clearTimeout(send);
+    gone.forEach(n => Q.hidden.delete(n.id));
+    Q.notes = Q.notes.concat(gone).sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
+    render();
+  });
 }
 
 /* ---------- таймер: считает от времени окончания, переживает перезагрузку ---------- */
@@ -184,6 +204,7 @@ const QI = {
   x: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
   play: '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.8v8.4L10 6z" fill="currentColor"/></svg>',
   chev: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 5.5 3 3 3-3"/></svg>',
+  minus: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h8"/></svg>',
   out: '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3H3v8h8V8.5M8 2h4v4M12 2 6.5 7.5"/></svg>',
   bolt: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3l-.8 6L13 7H8.6z" fill="currentColor"/></svg>',
 };
@@ -198,7 +219,7 @@ function qDetail(n) {
     ${steps.length ? `<div class="q-steps">${steps.map((s, i) => `
       <button class="q-step${s.done ? " done" : ""}${s.basket ? " on" : ""}" data-q-step="${n.id}:${i}" ${s.done ? "disabled" : ""}>
         <span class="q-box">${s.done ? QI.check : s.basket ? QI.bolt : ""}</span><span>${qe(s.t)}</span>
-      </button>`).join("")}<div class="q-hint">Нажми на шаг — он уйдёт в корзину на сегодня</div></div>` : ""}
+      </button>`).join("")}<div class="q-hint">Нажми на шаг — он уйдёт в «Сделать быстро» на сегодня</div></div>` : ""}
     <div class="q-detail-acts">
       <a class="q-link" href="${qObsidian(n)}">Открыть в Obsidian ${QI.out}</a>
       <span class="q-path">${qe(n.folder || "")}</span>
@@ -214,7 +235,8 @@ function qItemBasket(e) {
     <button class="q-t q-t-btn" data-q-open="b:${e.key}" title="Что за дело"><b>${qe(e.step ? e.step.t : e.note.title)}</b><span>${meta}</span></button>
     <div class="q-acts">
       <button class="q-ic" data-q-done="${e.key}" title="Уже сделал — без таймера">${QI.check}</button>
-      <button class="q-ic" data-q-drop="${e.key}" title="Убрать из корзины">${QI.x}</button>
+      <button class="q-ic" data-q-drop="${e.key}" title="Убрать из «Сделать быстро» — останется во «Всё»">${QI.minus}</button>
+      <button class="q-ic danger" data-q-trash="${e.note.id}" title="Удалить в корзину">${QI.x}</button>
       <button class="q-go" data-q-start="${e.key}">${QI.play}<span>Поехали</span></button>
     </div>
     ${open ? qDetail(e.note) : ""}
@@ -223,18 +245,42 @@ function qItemBasket(e) {
 function qItemPlain(n, { cls = "", meta = "" } = {}) {
   const steps = n.steps || [];
   const inB = steps.length ? steps.some(s => s.basket && !s.done) : n.basket;
+  if (Q.sel) {
+    const on = Q.sel.has(n.id);
+    return `<div class="q-row sel${on ? " chosen" : ""}${cls ? " " + cls : ""}">
+      <button class="q-row-main" data-q-sel="${n.id}">
+        <span class="q-box sel-box">${on ? QI.check : ""}</span>
+        <span class="q-t"><b>${qe(n.title)}</b><span>${meta}</span></span>
+      </button>
+    </div>`;
+  }
   const open = Q.open[n.id];
   const pick = steps.length
-    ? `<span class="q-pick static">${steps.filter(s => s.basket && !s.done).length ? "шаг в корзине" : "шаги"}</span>`
-    : `<button class="q-pick" data-q-toggle="${n.id}">${inB ? "в корзине" : "в корзину"}</button>`;
+    ? `<span class="q-pick static">${steps.filter(s => s.basket && !s.done).length ? "шаг взят" : "шаги"}</span>`
+    : `<button class="q-pick" data-q-toggle="${n.id}">${inB ? "взято" : "взять"}</button>`;
   return `<div class="q-row${inB ? " picked" : ""}${open ? " open" : ""}${cls ? " " + cls : ""}">
     <button class="q-row-main" data-q-open="${n.id}">
       <span class="q-t"><b>${qe(n.title)}</b><span>${meta}</span></span>
       <span class="q-chev${open ? " open" : ""}">${QI.chev}</span>
     </button>
-    <div class="q-row-side">${pick}${n.kind === "не забыть" && n.status !== "сделано" ? `<button class="q-ic" data-q-done="${n.id}" title="Сделал">${QI.check}</button>` : ""}</div>
+    <div class="q-row-side">${pick}${n.kind === "не забыть" && n.status !== "сделано" ? `<button class="q-ic" data-q-done="${n.id}" title="Сделал">${QI.check}</button>` : ""}<button class="q-ic danger" data-q-trash="${n.id}" title="Удалить в корзину">${QI.x}</button></div>
     ${open ? qDetail(n) : ""}
   </div>`;
+}
+function qToolbar(list, search) {
+  if (Q.sel) {
+    const n = Q.sel.size;
+    return `<div class="q-selbar">
+      <span class="q-sel-n">${n ? `Выбрано ${n}` : "Отметь заметки"}</span>
+      <button class="q-soft sm" data-q-sel-all>${list.length && list.every(x => Q.sel.has(x.id)) ? "Снять все" : "Все"}</button>
+      <span class="q-sel-gap"></span>
+      <button class="q-soft sm" data-q-sel-take ${n ? "" : "disabled"}>${QI.bolt}<span>Сделать быстро</span></button>
+      <button class="q-soft sm danger" data-q-sel-trash ${n ? "" : "disabled"}>${QI.x}<span>В корзину</span></button>
+      <button class="q-soft sm" data-q-sel-cancel>Готово</button>
+    </div>`;
+  }
+  return `<div class="q-tools">${search ? `<div class="q-search"><input id="qSearch" placeholder="Найти в хранилище" autocomplete="off" value="${qe(Q.q)}"></div>` : `<span class="q-sel-gap"></span>`}
+    <button class="q-soft sm" data-q-sel-start>Выбрать</button></div>`;
 }
 function qFocusHTML(t) {
   return `<div class="q-focus">
@@ -260,7 +306,7 @@ function qAwardHTML(a) {
     <p>${qe(a.line)}</p>
     <div class="q-focus-acts">
       ${next ? `<button class="q-big" data-q-next>${QI.play}<span>Следующее дело</span></button>` : ""}
-      <button class="q-soft" data-q-home>${next ? "К корзине" : "Готово"}</button>
+      <button class="q-soft" data-q-home>${next ? "К списку" : "Готово"}</button>
     </div>
   </div>`;
 }
@@ -283,12 +329,13 @@ function qBody() {
     if (doneToday) return `<div class="q-state cleared"><div class="q-cheer">${Q_CHEERS[doneToday % Q_CHEERS.length]}</div>
       <p>Сегодня закрыто ${doneToday} ${qPlural(doneToday, "дело", "дела", "дел")} · серия ${qStreak().n} ${qPlural(qStreak().n, "день", "дня", "дней")}</p>
       <div class="q-focus-acts"><button class="q-soft" data-q-tab="all">Взять ещё из «Всё»</button></div></div>`;
-    return `<div class="q-state"><b>Корзина пустая</b><p>Набери дела на сегодня: из «Всё из хранилища» или попроси подобрать быстрые.</p>
+    return `<div class="q-state"><b>Пока ничего не взято</b><p>Набери дела на сегодня: из «Всё из хранилища» или попроси подобрать быстрые.</p>
       <div class="q-focus-acts"><button class="q-big" data-q-suggest>${QI.bolt}<span>Подобрать быстрые</span></button><button class="q-soft" data-q-tab="all">Открыть «Всё»</button></div></div>`;
   }
   if (Q.tab === "remember") {
     const list = Q.notes.filter(n => n.kind === "не забыть" && n.status !== "сделано");
-    return `<div class="list">${list.map(n => qItemPlain(n, { cls: "alarm", meta: qe(n.source || "") })).join("") || '<div class="empty">Ничего не висит — всё, что было «не забыть», закрыто.</div>'}</div>`;
+    Q.visible = list;
+    return (list.length ? qToolbar(list, false) : "") + `<div class="list">${list.map(n => qItemPlain(n, { cls: "alarm", meta: qe(n.source || "") })).join("") || '<div class="empty">Ничего не висит — всё, что было «не забыть», закрыто.</div>'}</div>`;
   }
   if (Q.tab === "done") {
     const all = Q.notes.filter(n => n.status === "сделано").sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
@@ -315,7 +362,8 @@ function qBody() {
         return qItemPlain(n, { cls, meta });
       }).join("")}</div>` : ""}`;
   }).join("");
-  return `<div class="q-search"><input id="qSearch" placeholder="Найти в хранилище" autocomplete="off" value="${qe(Q.q)}"></div>${groups || '<div class="empty">Ничего не нашлось</div>'}`;
+  Q.visible = live;
+  return qToolbar(live, true) + (groups || '<div class="empty">Ничего не нашлось</div>');
 }
 function qSide() {
   const { n, today } = qStreak();
@@ -339,7 +387,7 @@ function qSide() {
     </div>
     ${qTimer() ? "" : `<div class="q-card q-mini">
       <button class="q-soft wide" data-q-suggest>${QI.bolt}<span>Подобрать быстрые</span></button>
-      <div class="q-mini-l">${basket.length ? `В корзине ${basket.length} · до ночи` : "Корзина обнуляется ночью"}</div>
+      <div class="q-mini-l">${basket.length ? `Взято ${basket.length} · до ночи` : "Список обнуляется ночью"}</div>
     </div>`}`;
 }
 function renderQuick() {
@@ -368,7 +416,7 @@ function renderQuick() {
     done: Q.notes.filter(n => n.status === "сделано" && qDoneDay(n) === qDay()).length,
     all: Q.notes.filter(n => n.status !== "сделано").length,
   };
-  const tabs = [["basket", "Корзина"], ["remember", "Не забыть"], ["done", "Сделано"], ["all", "Всё из хранилища"]];
+  const tabs = [["basket", "Сделать быстро"], ["remember", "Не забыть"], ["done", "Сделано"], ["all", "Всё из хранилища"]];
   $("board").innerHTML = `<div class="q">
     <div class="q-main">
       ${t || Q.award ? "" : `<div class="q-tabs">${tabs.map(([k, l]) => `<button class="${Q.tab === k ? "on" : ""}${k === "remember" ? " alarm" : ""}" data-q-tab="${k}"><span>${l}</span>${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</button>`).join("")}</div>`}
@@ -385,7 +433,25 @@ $("board").addEventListener("click", e => {
   if (view.mode !== "quick") return;
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
-  if (d.qTab) { Q.tab = d.qTab; Q.award = null; return render(); }
+  if (d.qTab) { Q.tab = d.qTab; Q.award = null; Q.sel = null; return render(); }
+  if (d.qTrash) return qTrash([d.qTrash]);
+  if (d.qSelStart !== undefined) { Q.sel = new Set(); Q.open = {}; return render(); }
+  if (d.qSelCancel !== undefined) { Q.sel = null; return render(); }
+  if (d.qSel) { Q.sel.has(d.qSel) ? Q.sel.delete(d.qSel) : Q.sel.add(d.qSel); return render(); }
+  if (d.qSelAll !== undefined) {
+    const list = Q.visible || [];
+    const all = list.length && list.every(x => Q.sel.has(x.id));
+    list.forEach(x => all ? Q.sel.delete(x.id) : Q.sel.add(x.id));
+    return render();
+  }
+  if (d.qSelTrash !== undefined) { const ids = [...Q.sel]; Q.sel = null; return qTrash(ids); }
+  if (d.qSelTake !== undefined) {
+    const picked = Q.notes.filter(n => Q.sel.has(n.id) && !(n.steps || []).length && !n.basket);
+    const withSteps = Q.notes.filter(n => Q.sel.has(n.id) && (n.steps || []).length).length;
+    picked.forEach(n => { n.basket = true; n.basket_day = qDay(); qChange(n, "basket", { basket: true }); });
+    Q.sel = null; render();
+    return toast(`Взято ${picked.length}${withSteps ? ` · у ${withSteps} есть шаги — шаги бери по одному` : ""}`);
+  }
   if (d.qReload !== undefined) { Q.error = ""; return qLoad(true); }
   if (d.qFold) { Q.folds[d.qFold] = !(Q.folds[d.qFold] ?? (d.qFold !== "all")); return render(); }
   if (d.qOpen) { Q.open[d.qOpen] = !Q.open[d.qOpen]; return render(); }
@@ -406,7 +472,7 @@ $("board").addEventListener("click", e => {
     const pick = Q.notes.filter(n => n.quick && n.status !== "сделано" && !n.basket && !(n.steps || []).length).slice(0, 3);
     pick.forEach(n => { n.basket = true; n.basket_day = qDay(); qChange(n, "basket", { basket: true }); });
     Q.tab = "basket"; render();
-    return toast(pick.length ? `В корзину ${pick.length} ${qPlural(pick.length, "быстрое дело", "быстрых дела", "быстрых дел")}` : "Быстрых дел нет — загляни во «Всё»");
+    return toast(pick.length ? `Взято ${pick.length} ${qPlural(pick.length, "быстрое дело", "быстрых дела", "быстрых дел")}` : "Быстрых дел нет — загляни во «Всё»");
   }
   if (d.qTimer) {
     const t = qTimer(); if (!t) return render();
@@ -435,5 +501,6 @@ $("board").addEventListener("input", e => {
   if (e.target.id !== "qSearch") return;
   Q.q = e.target.value; render();
 });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && Q.sel && view.mode === "quick") { Q.sel = null; render(); } }, true);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { qTick(); if (view.mode === "quick") qLoad(); } });
 qEnsureTick();
