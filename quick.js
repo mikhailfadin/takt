@@ -402,8 +402,9 @@ function renderQuick() {
   $("dateLine").textContent = Q.loaded && !Q.error ? `Всё из хранилища · ${live} ${qPlural(live, "заметка", "заметки", "заметок")} в работе` : "Всё из хранилища";
   $("prog").textContent = "";
   $("board").classList.remove("week-mode");
-  $("aim").hidden = false; $("aimInline").hidden = true; $("collapse").hidden = true;
-  document.querySelector(".main").classList.remove("bucket-view");
+  $("aim").hidden = isMobile(); $("aimInline").hidden = true; $("collapse").hidden = !isMobile();
+  document.querySelector(".main").classList.toggle("bucket-view", isMobile());
+  document.querySelector(".main").classList.add("quick-view");
   $("carryBtn").hidden = true;
   sideCal._show(TODAY);
 
@@ -416,10 +417,10 @@ function renderQuick() {
     done: Q.notes.filter(n => n.status === "сделано" && qDoneDay(n) === qDay()).length,
     all: Q.notes.filter(n => n.status !== "сделано").length,
   };
-  const tabs = [["basket", "Сделать быстро"], ["remember", "Не забыть"], ["done", "Сделано"], ["all", "Всё из хранилища"]];
-  $("board").innerHTML = `<div class="q">
+  const tabs = [["basket", "Сделать быстро", "Быстро"], ["remember", "Не забыть", "Не забыть"], ["done", "Сделано", "Сделано"], ["all", "Всё из хранилища", "Всё"]];
+  $("board").innerHTML = `<div class="q${t || Q.award ? " focusing" : ""}">
     <div class="q-main">
-      ${t || Q.award ? "" : `<div class="q-tabs">${tabs.map(([k, l]) => `<button class="${Q.tab === k ? "on" : ""}${k === "remember" ? " alarm" : ""}" data-q-tab="${k}"><span>${l}</span>${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</button>`).join("")}</div>`}
+      ${t || Q.award ? "" : `<div class="q-tabs">${tabs.map(([k, l, sh]) => `<button class="${Q.tab === k ? "on" : ""}${k === "remember" ? " alarm" : ""}" data-q-tab="${k}"><span class="l-full">${l}</span><span class="l-short">${sh}</span>${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</button>`).join("")}</div>`}
       <div class="q-body">${qBody()}</div>
     </div>
     <aside class="q-side">${Q.loaded && !Q.error ? qSide() : ""}</aside>
@@ -504,3 +505,4 @@ $("board").addEventListener("input", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && Q.sel && view.mode === "quick") { Q.sel = null; render(); } }, true);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { qTick(); if (view.mode === "quick") qLoad(); } });
 qEnsureTick();
+setTimeout(() => { if (typeof user !== "undefined" && user && !Q.loaded) qLoad(); }, 4000);

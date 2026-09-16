@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "14";
+var APP_V = "15";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -795,6 +795,58 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-ring{width:200px;height:200px}
   .q-ring b{font-size:44px}
 }
+/* быстрые дела — телефон */
+.mquick{display:none}
+.q-tabs .l-short{display:none}
+@media (max-width:760px){
+  .mbuckets .mquick{display:flex;position:relative;flex:0 0 50px;justify-content:center;padding:0;background:var(--dock-text);color:var(--bucket-card)}
+  .mbuckets .mquick svg{color:var(--bucket-card)}
+  .mbuckets .mquick .n{position:absolute;top:-6px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--bucket-card);color:var(--dock-text);font:600 11px/20px var(--mono);margin:0;box-shadow:0 0 0 2px var(--bg)}
+  .mbuckets .mquick .n:empty{display:none}
+  .mbuckets button{padding:0 11px;gap:6px;white-space:nowrap}
+  .main.quick-view .mdock{display:none}
+  .main.quick-view .board{padding:4px 14px calc(104px + env(safe-area-inset-bottom))}
+  .main.quick-view .grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:calc(8px + env(safe-area-inset-top)) auto 0}
+  .main.quick-view .head{padding-top:10px}
+  .q-side{flex-direction:row;flex-wrap:wrap;gap:8px}
+  .q-streak{flex:1 1 100%;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;align-items:center;padding:14px 16px}
+  .q-big-n{flex-direction:column;align-items:flex-start;gap:2px}
+  .q-big-n b{font-size:46px}
+  .q-big-n span{font-size:13px}
+  .q-chain{margin-top:0;gap:3px}
+  .q-chain-l{grid-column:2;margin-top:6px}
+  .q-rank{display:block;flex:1 1 100%;padding:12px 16px}
+  .q-rank-h b{font-size:15px}
+  .q-rank-bar{margin-top:10px}
+  .q-sum-hint{display:none}
+  .q.focusing .q-side{display:none}
+  .main.quick-view h1{font-size:27px}
+  .main.quick-view .sub{margin-top:6px;font-size:14px}
+  .q-tabs{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:25;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px;border-radius:24px;background:var(--surface);box-shadow:var(--shadow-lg),inset 0 0 0 1px var(--line)}
+  .q-tabs button{position:relative;flex-direction:column;justify-content:center;height:54px;border-radius:18px;gap:0;box-shadow:none;font-size:12.5px;padding:0 2px;line-height:1.15;text-align:center}
+  .q-tabs .l-full{display:none}
+  .q-tabs .l-short{display:inline}
+  .q-tabs .n{position:absolute;top:5px;right:8px;font-size:10.5px}
+  .q-pick{opacity:1}
+  .q-row-main{padding:12px 10px 12px 16px}
+  .q-row-side{padding-right:4px;gap:0}
+  .q-row-side .q-ic{width:38px;height:38px}
+  .q-search input{font-size:16px}
+  .q-tools .q-soft.sm{height:44px}
+  .q-selbar{top:-4px;border-radius:20px}
+  .q-selbar .q-soft.sm{height:38px;padding:0 10px}
+  .q-item{padding:10px}
+  .q-t b{font-size:15.5px}
+  .q-acts .q-go{height:42px}
+  .q-focus,.q-award{padding:28px 18px 24px;border-radius:22px}
+  .q-focus-top b{font-size:22px}
+  .q-focus .q-focus-acts{flex-direction:column;align-self:stretch}
+  .q-focus .q-big,.q-focus .q-soft{width:100%;height:54px}
+  .q-state{padding:26px 20px}
+  .q-cheer{font-size:24px}
+  .q-state .q-focus-acts{flex-direction:column}
+  .q-state .q-big,.q-state .q-soft{width:100%}
+}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -838,6 +890,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
     <div class="mdock">
       <div class="mfocus"><div class="fbar idle" id="mfbar" role="button" aria-label="Такт"></div><button class="plus plus-big" id="mAddBtn" aria-label="Новая задача"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="mbuckets" id="mBuckets">
+        <button class="mquick" data-mode="quick" data-date="quick" aria-label="Быстрые дела"><svg width="20" height="20" viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3l-.8 6L13 7H8.6z" fill="currentColor"/></svg><span class="n" id="mQuickN"></span></button>
         <button data-mode="day" data-date="inbox"><span>Входящие</span><span class="n" id="mInboxN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
         <button data-mode="day" data-date="someday"><span>Когда-нибудь</span><span class="n" id="mSomedayN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
       </div>
@@ -1158,10 +1211,12 @@ function render() {
   $("stepNext").title = view.mode === "week" ? "Следующая неделя" : "Следующий день";
   $("collapse").hidden = !(bucket && isMobile());
   document.querySelector(".main").classList.toggle("bucket-view", bucket);
+  document.querySelector(".main").classList.remove("quick-view");
   $("mBuckets").hidden = bucket;
   $("mProgWrap").hidden = bucket;
   $("mInboxN").textContent = active(INBOX).length || "";
   $("mSomedayN").textContent = active(SOMEDAY).length || "";
+  $("mQuickN").textContent = typeof quickCount === "function" ? (quickCount() || "") : "";
   $("carryBtn").hidden = view.mode !== "day" || bucket || active(view.date).length === 0;
   sideCal._show(view.mode === "day" && !bucket ? view.date : TODAY);
 }
@@ -1175,7 +1230,8 @@ function toastUndo(t, undo) {
   el._t = setTimeout(() => el.hidden = true, 3000);
 }
 function go(mode, date) {
-  if (isBucket(date) && !(view.mode === "day" && isBucket(view.date))) view.back = { mode: view.mode, date: view.date };
+  const full = (m, d) => m === "quick" || (m === "day" && isBucket(d));
+  if (full(mode, date) && !full(view.mode, view.date)) view.back = { mode: view.mode, date: view.date };
   if (date === ARCHIVE && view.date === INBOX) view.archBack = true; else if (date !== ARCHIVE) view.archBack = false;
   view.mode = mode; view.date = date; closeMenu(); render(); $("board").scrollTop = 0;
 }
@@ -1653,7 +1709,8 @@ function shiftDay(n, week = false) {
 const mainEl = document.querySelector(".main");
 let pull = null;
 mainEl.addEventListener("touchstart", e => {
-  if (!isMobile() || !(view.mode === "day" && isBucket(view.date))) return;
+  if (!isMobile() || !(view.mode === "quick" || (view.mode === "day" && isBucket(view.date)))) return;
+  if (e.target.closest(".q-tabs")) return;
   if ($("board").scrollTop > 0 && !e.target.closest(".head,.grab")) return;
   pull = { y: e.touches[0].clientY, dy: 0 };
 }, { passive: true });
@@ -1951,6 +2008,6 @@ render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
-<script src="quick.js?v=3"></script>
+<script src="quick.js?v=5"></script>
 </body>
 </html>
