@@ -184,42 +184,61 @@ const QI = {
   x: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
   play: '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.8v8.4L10 6z" fill="currentColor"/></svg>',
   chev: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 5.5 3 3 3-3"/></svg>',
+  out: '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3H3v8h8V8.5M8 2h4v4M12 2 6.5 7.5"/></svg>',
   bolt: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3l-.8 6L13 7H8.6z" fill="currentColor"/></svg>',
 };
 
+const qObsidian = n => `obsidian://open?vault=Obsidian&file=${encodeURIComponent(String(n.path || "").replace(/\.md$/, ""))}`;
+function qDetail(n) {
+  const steps = n.steps || [];
+  const text = (n.excerpt || "").trim();
+  const long = text.length >= 1490;
+  return `<div class="q-detail">
+    ${text ? `<div class="q-text">${qe(text)}${long ? "…" : ""}</div>` : `<div class="q-text empty-t">В заметке нет текста — только название.</div>`}
+    ${steps.length ? `<div class="q-steps">${steps.map((s, i) => `
+      <button class="q-step${s.done ? " done" : ""}${s.basket ? " on" : ""}" data-q-step="${n.id}:${i}" ${s.done ? "disabled" : ""}>
+        <span class="q-box">${s.done ? QI.check : s.basket ? QI.bolt : ""}</span><span>${qe(s.t)}</span>
+      </button>`).join("")}<div class="q-hint">Нажми на шаг — он уйдёт в корзину на сегодня</div></div>` : ""}
+    <div class="q-detail-acts">
+      <a class="q-link" href="${qObsidian(n)}">Открыть в Obsidian ${QI.out}</a>
+      <span class="q-path">${qe(n.folder || "")}</span>
+    </div>
+  </div>`;
+}
 function qItemBasket(e) {
   const min = e.note.minutes === 15 ? 15 : 5;
+  const open = Q.open["b:" + e.key];
   const meta = e.step ? `${qe(e.note.title)} · шаг ${e.step.i + 1} из ${e.note.steps.length}` : `${qe(qGroup(e.note))}${e.note.source ? " · " + qe(e.note.source) : ""}`;
-  return `<div class="q-item${e.note.kind === "не забыть" ? " alarm" : ""}">
+  return `<div class="q-item${e.note.kind === "не забыть" ? " alarm" : ""}${open ? " open" : ""}">
     <button class="q-min" data-q-min="${e.key}" title="Оценка: нажми, чтобы сменить 5 ↔ 15">${min}<small>мин</small></button>
-    <div class="q-t"><b>${qe(e.step ? e.step.t : e.note.title)}</b><span>${meta}</span></div>
+    <button class="q-t q-t-btn" data-q-open="b:${e.key}" title="Что за дело"><b>${qe(e.step ? e.step.t : e.note.title)}</b><span>${meta}</span></button>
     <div class="q-acts">
       <button class="q-ic" data-q-done="${e.key}" title="Уже сделал — без таймера">${QI.check}</button>
       <button class="q-ic" data-q-drop="${e.key}" title="Убрать из корзины">${QI.x}</button>
       <button class="q-go" data-q-start="${e.key}">${QI.play}<span>Поехали</span></button>
     </div>
+    ${open ? qDetail(e.note) : ""}
   </div>`;
 }
-function qItemPlain(n, { cls = "", meta = "", act = "toggle" } = {}) {
+function qItemPlain(n, { cls = "", meta = "" } = {}) {
   const steps = n.steps || [];
   const inB = steps.length ? steps.some(s => s.basket && !s.done) : n.basket;
   const open = Q.open[n.id];
-  const stepsHTML = steps.length && open ? `<div class="q-steps">${steps.map((s, i) => `
-      <button class="q-step${s.done ? " done" : ""}${s.basket ? " on" : ""}" data-q-step="${n.id}:${i}" ${s.done ? "disabled" : ""}>
-        <span class="q-box">${s.done ? QI.check : s.basket ? QI.bolt : ""}</span><span>${qe(s.t)}</span>
-      </button>`).join("")}<div class="q-hint">Нажми на шаг — он уйдёт в корзину на сегодня</div></div>` : "";
-  return `<div class="q-row${inB ? " picked" : ""}${cls ? " " + cls : ""}">
-    <button class="q-row-main" data-q-${steps.length ? "open" : act}="${n.id}">
+  const pick = steps.length
+    ? `<span class="q-pick static">${steps.filter(s => s.basket && !s.done).length ? "шаг в корзине" : "шаги"}</span>`
+    : `<button class="q-pick" data-q-toggle="${n.id}">${inB ? "в корзине" : "в корзину"}</button>`;
+  return `<div class="q-row${inB ? " picked" : ""}${open ? " open" : ""}${cls ? " " + cls : ""}">
+    <button class="q-row-main" data-q-open="${n.id}">
       <span class="q-t"><b>${qe(n.title)}</b><span>${meta}</span></span>
-      ${steps.length ? `<span class="q-chev${open ? " open" : ""}">${QI.chev}</span>` : `<span class="q-pick">${inB ? "в корзине" : "в корзину"}</span>`}
+      <span class="q-chev${open ? " open" : ""}">${QI.chev}</span>
     </button>
-    ${n.kind === "не забыть" && n.status !== "сделано" ? `<button class="q-ic" data-q-done="${n.id}" title="Сделал">${QI.check}</button>` : ""}
-    ${stepsHTML}
+    <div class="q-row-side">${pick}${n.kind === "не забыть" && n.status !== "сделано" ? `<button class="q-ic" data-q-done="${n.id}" title="Сделал">${QI.check}</button>` : ""}</div>
+    ${open ? qDetail(n) : ""}
   </div>`;
 }
 function qFocusHTML(t) {
   return `<div class="q-focus">
-    <div class="q-focus-top">${t.parent ? `<span>${qe(t.parent)}</span>` : "<span>быстрое дело</span>"}<b>${qe(t.title)}</b></div>
+    <div class="q-focus-top">${t.parent ? `<span>${qe(t.parent)}</span>` : "<span>быстрое дело</span>"}<b>${qe(t.title)}</b>${(() => { const en = qFind(t.key); const x = en && (en.note.excerpt || "").trim(); return x ? `<details class="q-focus-text"${Q.focusText ? " open" : ""}><summary>Что за дело</summary><div class="q-text">${qe(x)}</div><a class="q-link" href="${qObsidian(en.note)}">Открыть в Obsidian ${QI.out}</a></details>` : ""; })()}</div>
     <div class="q-ring">
       <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" class="bg"/><circle id="qArc" cx="60" cy="60" r="54" class="fg" stroke-dasharray="339.29" stroke-dashoffset="0"/></svg>
       <div><b id="qClock">--:--</b><span id="qClockSub">осталось</span></div>
@@ -411,6 +430,7 @@ $("board").addEventListener("click", e => {
   if (d.qNext !== undefined) { Q.award = null; const list = qBasket(); return list.length ? qStart(list[0]) : render(); }
   if (d.qHome !== undefined) { Q.award = null; Q.tab = "basket"; return render(); }
 });
+$("board").addEventListener("toggle", e => { if (e.target.classList?.contains("q-focus-text")) Q.focusText = e.target.open; }, true);
 $("board").addEventListener("input", e => {
   if (e.target.id !== "qSearch") return;
   Q.q = e.target.value; render();

@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "12";
+var APP_V = "13";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -241,7 +241,7 @@ input,textarea{font:inherit;color:inherit}
 .brand{display:flex;align-items:center;gap:10px;padding:4px 8px;margin:-4px 0;border-radius:10px;color:inherit;text-decoration:none;align-self:flex-start}
 .brand:hover{background:var(--hover)}
 .brand b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.brand .mark{height:20px;width:auto;color:var(--text);flex:none}
+.brand .mark{height:24px;width:auto;color:var(--accent);flex:none}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:10px;text-align:left;color:var(--dim);font-weight:500}
 .nav button:hover{background:var(--hover);color:var(--text)}
@@ -625,7 +625,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .auth-card{width:min(360px,100%);display:flex;flex-direction:column;gap:10px}
 .auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:4px}
 .auth-logo b{font-size:40px;font-weight:700;letter-spacing:-.03em}
-.auth-logo .mark{height:34px;width:auto;color:var(--text)}
+.auth-logo .mark{height:40px;width:auto;color:var(--accent)}
 .auth-sub{margin:0 0 12px;color:var(--dim)}
 .auth input{height:52px;border-radius:14px;border:1px solid var(--line);background:var(--surface);padding:0 16px;font-size:16px;outline:0;color:var(--text)}
 .auth input:focus{border-color:var(--accent)}
@@ -676,7 +676,9 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-row-main:hover{background:var(--hover)}
 .q-row>.q-ic{margin-right:8px}
 .q-pick{font-size:12px;color:var(--mute);white-space:nowrap;padding:4px 10px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);opacity:0;transition:opacity .12s}
-.q-row-main:hover .q-pick,.q-row.picked .q-pick{opacity:1}
+.q-row:hover .q-pick,.q-row.picked .q-pick,.q-row.open .q-pick,.q-pick.static{opacity:1}
+.q-pick:not(.static):hover{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent)}
+.q-row.picked .q-pick:hover{color:var(--on-accent)}
 .q-row.picked .q-pick{background:var(--accent);color:var(--on-accent);box-shadow:none}
 .q-chev{color:var(--mute);display:grid;place-items:center;transition:transform .15s;flex:none;margin-left:auto}
 .q-chev.open{transform:rotate(180deg)}
@@ -690,6 +692,24 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-step.done .q-box{background:var(--check);box-shadow:none}
 .q-step.on .q-box{background:var(--accent);box-shadow:none}
 .q-hint{font-size:12px;color:var(--mute);padding:6px 10px 0}
+.q-t-btn{cursor:pointer;padding:4px 0}
+.q-t-btn:hover b{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+.q-row-side{display:flex;align-items:center;gap:4px;padding-right:10px}
+.q-detail{grid-column:1/-1;padding:2px 18px 16px}
+.q-item .q-detail{padding:4px 2px 2px}
+.q-text{white-space:pre-wrap;word-break:break-word;color:var(--dim);font-size:14px;line-height:1.55;max-height:340px;overflow:auto;padding:12px 14px;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.q-text.empty-t{color:var(--mute)}
+.q-detail .q-steps{padding:10px 0 0}
+.q-detail-acts{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+.q-link{color:var(--accent);display:inline-flex;gap:6px;align-items:center;font-weight:500;text-decoration:none}
+.q-link:hover{text-decoration:underline;text-underline-offset:3px}
+.q-path{font:12px var(--mono);color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-focus-text{margin-top:12px;text-align:left;width:min(560px,100%)}
+.q-focus-text summary{cursor:pointer;color:var(--mute);font-size:13px;text-align:center;list-style:none}
+.q-focus-text summary::-webkit-details-marker{display:none}
+.q-focus-text summary:hover{color:var(--accent)}
+.q-focus-text .q-text{margin:10px 0}
+.q-focus-top{width:min(560px,100%)}
 .q-fold{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
 .q-fold .n{color:var(--dim)}
 .q-fold .q-chev{margin-left:0}
@@ -765,7 +785,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 <body>
 <div class="app">
   <aside class="side">
-    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Быстродел» в новой вкладке" aria-label="Быстродел — открыть в новой вкладке"><b>Быстродел</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></a>
+    <a class="brand" href="./" target="_blank" rel="noopener" title="Открыть «Быстродел» в новой вкладке" aria-label="Быстродел — открыть в новой вкладке"><svg class="mark" viewBox="150 300 1000 580" aria-hidden="true"><defs><mask id="bird1" maskUnits="userSpaceOnUse" x="100" y="250" width="1100" height="700"><rect x="100" y="250" width="1100" height="700" fill="#fff"/><path d="M607 497 L797 542 L668 569 L776 688 L524 580 L652 577 Z" fill="#000" stroke="#000" stroke-width="12" stroke-linejoin="round"/><circle cx="955" cy="541" r="44" fill="#000"/><circle cx="936" cy="546" r="14" fill="#fff"/></mask></defs><g mask="url(#bird1)" fill="currentColor"><path d="M250 342 L742 415 L703 342 Q948 350 1043 522 L1118 572 L1047 596 Q985 732 834 770 L902 800 L756 858 L788 812 Q640 772 392 858 L588 692 L306 514 L494 497 Z" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/><rect x="170" y="655" width="320" height="64" rx="32"/><rect x="236" y="733" width="200" height="58" rx="29"/></g></svg><b>Быстродел</b></a>
     <nav class="nav" id="nav"></nav>
     <div class="cal" id="sideCal"></div>
     <div class="side-foot">
@@ -896,7 +916,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 <div class="auth" id="auth" hidden>
   <form class="auth-card" id="authForm" autocomplete="on">
-    <div class="auth-logo"><b>Быстродел</b><svg class="mark" viewBox="-160 -180 410 360" aria-hidden="true"><circle r="48" fill="currentColor"/><path d="M0-156V-100M0 100V156M-118-114-82-78M-118 114-82 78M100 0H222" stroke="currentColor" stroke-width="38" stroke-linecap="round" fill="none"/></svg></div>
+    <div class="auth-logo"><svg class="mark" viewBox="150 300 1000 580" aria-hidden="true"><defs><mask id="bird2" maskUnits="userSpaceOnUse" x="100" y="250" width="1100" height="700"><rect x="100" y="250" width="1100" height="700" fill="#fff"/><path d="M607 497 L797 542 L668 569 L776 688 L524 580 L652 577 Z" fill="#000" stroke="#000" stroke-width="12" stroke-linejoin="round"/><circle cx="955" cy="541" r="44" fill="#000"/><circle cx="936" cy="546" r="14" fill="#fff"/></mask></defs><g mask="url(#bird2)" fill="currentColor"><path d="M250 342 L742 415 L703 342 Q948 350 1043 522 L1118 572 L1047 596 Q985 732 834 770 L902 800 L756 858 L788 812 Q640 772 392 858 L588 692 L306 514 L494 497 Z" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/><rect x="170" y="655" width="320" height="64" rx="32"/><rect x="236" y="733" width="200" height="58" rx="29"/></g></svg><b>Быстродел</b></div>
     <p class="auth-sub" id="authSub">Войди, чтобы задачи были и на телефоне, и на компьютере</p>
     <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="Почта" required>
     <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" minlength="6" required>
@@ -1915,6 +1935,6 @@ render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
-<script src="quick.js?v=1"></script>
+<script src="quick.js?v=2"></script>
 </body>
 </html>
