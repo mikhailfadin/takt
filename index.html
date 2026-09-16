@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "15";
+var APP_V = "17";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -652,8 +652,9 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-tabs button.alarm:not(.on) .n{color:var(--todo);opacity:1}
 .q-sum{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 2px 10px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
 .q-sum-hint{text-transform:none;letter-spacing:0;font:13px var(--sans)}
-.q-item{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--surface);border-radius:var(--r);padding:12px 12px 12px 12px;box-shadow:var(--shadow), inset 4px 0 0 var(--accent)}
-.q-item.alarm{box-shadow:var(--shadow), inset 4px 0 0 var(--todo)}
+.q-item{position:relative;overflow:hidden;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);--bar:var(--accent)}
+.q-item-line{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px}
+.q-item.alarm,.q-row.alarm{--bar:var(--todo)}
 .q-min{display:flex;flex-direction:column;align-items:center;justify-content:center;height:52px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font:600 22px/1 var(--mono)}
 .q-min small{font:500 10px var(--sans);margin-top:3px;color:var(--dim)}
 .q-min:hover{box-shadow:inset 0 0 0 1.5px var(--accent)}
@@ -665,16 +666,23 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-ic:hover{background:var(--accent-soft);color:var(--accent)}
 .q-go{display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 14px;border-radius:20px;background:var(--accent);color:var(--on-accent);font-weight:600;margin-left:4px}
 .q-go:hover{filter:brightness(1.06)}
-.q-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-.q-row.grey{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.q-row{position:relative;overflow:hidden;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);--line-bg:var(--surface)}
+.q-item::before,.q-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--bar,transparent);z-index:3;pointer-events:none}
+.q-swipe{position:relative}
+.q-line{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;background:var(--line-bg,var(--surface))}
+.q-item .q-line{background:var(--surface)}
+.q-under{display:none}
+.q-row.grey{background:transparent;box-shadow:inset 0 0 0 1px var(--line);--line-bg:var(--bg)}
+.q-row.grey .q-line{box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r)}
 .q-row.grey .q-t b{color:var(--dim)}
-.q-row.idea{background:var(--idea-bg);box-shadow:inset 4px 0 0 var(--idea)}
-.q-row.alarm{box-shadow:var(--shadow), inset 4px 0 0 var(--todo)}
-.q-row.picked{box-shadow:inset 4px 0 0 var(--accent), inset 0 0 0 1px var(--accent-soft)}
+.q-row.idea{background:var(--idea-bg);box-shadow:none;--bar:var(--idea);--line-bg:linear-gradient(var(--idea-bg),var(--idea-bg)),var(--bg)}
+.q-row.idea .q-line{background:linear-gradient(var(--idea-bg),var(--idea-bg)),var(--bg)}
+.q-row.alarm{box-shadow:var(--shadow)}
+.q-row.picked{box-shadow:inset 0 0 0 1px var(--accent-soft);--bar:var(--accent)}
 .q-row.picked .q-t b{color:var(--text)}
 .q-row-main{display:flex;align-items:center;gap:14px;padding:11px 14px 11px 18px;text-align:left;min-width:0}
 .q-row-main:hover{background:var(--hover)}
-.q-row>.q-ic{margin-right:8px}
+
 .q-pick{font-size:12px;color:var(--mute);white-space:nowrap;padding:4px 10px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);opacity:0;transition:opacity .12s}
 .q-row:hover .q-pick,.q-row.picked .q-pick,.q-row.open .q-pick,.q-pick.static{opacity:1}
 .q-pick:not(.static):hover{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent)}
@@ -695,8 +703,8 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-t-btn{cursor:pointer;padding:4px 0}
 .q-t-btn:hover b{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
 .q-row-side{display:flex;align-items:center;gap:4px;padding-right:10px}
-.q-detail{grid-column:1/-1;padding:2px 18px 16px}
-.q-item .q-detail{padding:4px 2px 2px}
+.q-detail{padding:2px 18px 16px}
+.q-item .q-detail{padding:0 12px 12px}
 .q-text{white-space:pre-wrap;word-break:break-word;color:var(--dim);font-size:14px;line-height:1.55;max-height:340px;overflow:auto;padding:12px 14px;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
 .q-text.empty-t{color:var(--mute)}
 .q-detail .q-steps{padding:10px 0 0}
@@ -725,6 +733,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-row.sel .q-row-main{padding-left:14px}
 .q-box.sel-box{box-shadow:inset 0 0 0 1.5px var(--mute);border-radius:7px}
 .q-row.chosen{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.q-row.chosen .q-line{box-shadow:inset 0 0 0 1.5px var(--accent);border-radius:var(--r)}
 .q-row.chosen .sel-box{background:var(--accent);box-shadow:none;color:var(--on-accent)}
 .q-fold{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
 .q-fold .n{color:var(--dim)}
@@ -790,24 +799,21 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q{grid-template-columns:1fr;gap:14px}
   .q-side{position:static;order:-1}
   .q-mini,.q-rank{display:none}
-  .q-item{grid-template-columns:50px minmax(0,1fr);gap:12px}
   .q-acts{grid-column:1/-1;justify-content:flex-end}
   .q-ring{width:200px;height:200px}
   .q-ring b{font-size:44px}
 }
 /* быстрые дела — телефон */
-.mquick{display:none}
+.to-tasks{display:flex;align-items:center;gap:6px;width:auto!important;padding:0 14px;font-weight:600;font-size:14px}
 .q-tabs .l-short{display:none}
 @media (max-width:760px){
-  .mbuckets .mquick{display:flex;position:relative;flex:0 0 50px;justify-content:center;padding:0;background:var(--dock-text);color:var(--bucket-card)}
-  .mbuckets .mquick svg{color:var(--bucket-card)}
-  .mbuckets .mquick .n{position:absolute;top:-6px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--bucket-card);color:var(--dock-text);font:600 11px/20px var(--mono);margin:0;box-shadow:0 0 0 2px var(--bg)}
-  .mbuckets .mquick .n:empty{display:none}
-  .mbuckets button{padding:0 11px;gap:6px;white-space:nowrap}
-  .main.quick-view .mdock{display:none}
-  .main.quick-view .board{padding:4px 14px calc(104px + env(safe-area-inset-bottom))}
-  .main.quick-view .grab{display:block;width:42px;height:5px;border-radius:3px;background:var(--mute);opacity:.5;margin:calc(8px + env(safe-area-inset-top)) auto 0}
-  .main.quick-view .head{padding-top:10px}
+  body::after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top);background:var(--bg);z-index:45;pointer-events:none}
+  .mbuckets button{white-space:nowrap}
+  .mbuckets .mq .bolt{color:var(--dock-accent)}
+  .main.quick-view{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+  .main.quick-view .mdock,.main.quick-view .grab{display:none}
+  .main.quick-view .head{flex:none;padding:calc(12px + env(safe-area-inset-top)) 16px 10px;align-items:center}
+  .main.quick-view .board{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 14px 20px}
   .q-side{flex-direction:row;flex-wrap:wrap;gap:8px}
   .q-streak{flex:1 1 100%;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;align-items:center;padding:14px 16px}
   .q-big-n{flex-direction:column;align-items:flex-start;gap:2px}
@@ -820,14 +826,29 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-rank-bar{margin-top:10px}
   .q-sum-hint{display:none}
   .q.focusing .q-side{display:none}
-  .main.quick-view h1{font-size:27px}
-  .main.quick-view .sub{margin-top:6px;font-size:14px}
-  .q-tabs{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:25;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px;border-radius:24px;background:var(--surface);box-shadow:var(--shadow-lg),inset 0 0 0 1px var(--line)}
+  .main.quick-view h1{font-size:26px;white-space:nowrap}
+  .main.quick-view .head>div:first-child{min-width:0}
+  .main.quick-view .sub{margin-top:4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .main.quick-view #acctBtn{display:none}
+  .main.quick-view .head-actions{flex:none}
+  .main.quick-view .head-actions .aim:not(.to-tasks){width:40px;height:40px}
+  .main.quick-view .board{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+  .q-tabs{position:fixed;left:0;right:0;bottom:0;z-index:35;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-radius:0;background:var(--side);box-shadow:0 -1px 0 var(--line)}
   .q-tabs button{position:relative;flex-direction:column;justify-content:center;height:54px;border-radius:18px;gap:0;box-shadow:none;font-size:12.5px;padding:0 2px;line-height:1.15;text-align:center}
   .q-tabs .l-full{display:none}
   .q-tabs .l-short{display:inline}
   .q-tabs .n{position:absolute;top:5px;right:8px;font-size:10.5px}
   .q-pick{opacity:1}
+  .q-row:not(.picked) .q-pick:not(.static),.q-ic.desk,.q-row-side .q-ic.danger{display:none}
+  .q-line{touch-action:pan-y}
+  .q-under{display:flex;position:absolute;top:0;right:0;bottom:0;z-index:0;visibility:hidden}
+  .q-swipe.swiping .q-under{visibility:visible}
+  .q-under-b{width:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:600}
+  .q-under-b.q-take{background:var(--accent);color:var(--on-accent)}
+  .q-under-b.q-del{background:var(--todo);color:#fff}
+  .q-swipe.q-far .q-under-b.q-take{width:0;overflow:hidden;padding:0}
+  .q-swipe.q-far .q-under-b.q-del{width:100vw}
+  .q-item-line{grid-template-columns:50px minmax(0,1fr);gap:12px;padding:10px}
   .q-row-main{padding:12px 10px 12px 16px}
   .q-row-side{padding-right:4px;gap:0}
   .q-row-side .q-ic{width:38px;height:38px}
@@ -835,7 +856,6 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-tools .q-soft.sm{height:44px}
   .q-selbar{top:-4px;border-radius:20px}
   .q-selbar .q-soft.sm{height:38px;padding:0 10px}
-  .q-item{padding:10px}
   .q-t b{font-size:15.5px}
   .q-acts .q-go{height:42px}
   .q-focus,.q-award{padding:28px 18px 24px;border-radius:22px}
@@ -870,6 +890,7 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
         <div class="sub"><span id="dateLine"></span><div class="bar"><div id="barFill"></div></div><span class="pct" id="pct"></span><span class="prog" id="prog"></span></div>
       </div>
       <div class="head-actions">
+      <button class="aim to-tasks" id="toTasks" hidden aria-label="К задачам"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="5" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="13" r="1.2" fill="currentColor" stroke="none"/><path d="M7.5 5h7M7.5 9h7M7.5 13h7"/></svg><span>Задачи</span></button>
       <button class="aim" id="collapse" title="Свернуть" aria-label="Свернуть" hidden><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 6.5h-4v-4M9.5 6.5l4-4M2.5 9.5h4v4M6.5 9.5l-4 4"/></svg></button>
       <button class="aim" id="aim" title="Сегодня" aria-label="Вернуться к сегодня" hidden>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><circle cx="11" cy="11" r="1.6" fill="currentColor" stroke="none"/><path d="M11 1.5v3M11 17.5v3M1.5 11h3M17.5 11h3"/></svg>
@@ -890,9 +911,8 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
     <div class="mdock">
       <div class="mfocus"><div class="fbar idle" id="mfbar" role="button" aria-label="Такт"></div><button class="plus plus-big" id="mAddBtn" aria-label="Новая задача"><svg width="22" height="22" viewBox="0 0 18 18"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="mbuckets" id="mBuckets">
-        <button class="mquick" data-mode="quick" data-date="quick" aria-label="Быстрые дела"><svg width="20" height="20" viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3l-.8 6L13 7H8.6z" fill="currentColor"/></svg><span class="n" id="mQuickN"></span></button>
         <button data-mode="day" data-date="inbox"><span>Входящие</span><span class="n" id="mInboxN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
-        <button data-mode="day" data-date="someday"><span>Когда-нибудь</span><span class="n" id="mSomedayN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
+        <button class="mq" data-mode="quick" data-date="quick"><svg class="bolt" width="17" height="17" viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3l-.8 6L13 7H8.6z" fill="currentColor"/></svg><span>Быстрые дела</span><span class="n" id="mQuickN"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg></button>
       </div>
       <div class="mprog" id="mProgWrap"><div class="line"><div id="mLine"></div></div><span id="mProg"></span></div>
     </div>
@@ -1180,6 +1200,7 @@ function render() {
       $("prog").textContent = view.date === INBOX ? (a.length ? `осталось ${a.length}` : "пусто") : (arch.length ? `${arch.length} в архиве` : "пусто");
       $("board").innerHTML = view.date === INBOX
         ? `<div class="cols one"><div class="col"><h2>Осталось <span>${a.length}</span></h2><div class="list" data-list="${INBOX}">${a.map(x => taskHTML(x)).join("") || '<div class="empty">Входящие пусты — всё разобрано.</div>'}</div>
+            <button class="arch-link" data-mode="day" data-date="${SOMEDAY}"><span>Когда-нибудь</span><span class="n">${active(SOMEDAY).length || ""}</span></button>
             <button class="arch-link" data-mode="day" data-date="${ARCHIVE}"><span>Архив</span><span class="n">${arch.length || ""}</span></button></div></div>`
         : `<div class="cols one"><div class="col"><div class="list">${arch.map(x => taskHTML(x)).join("") || '<div class="empty">Архив пуст.</div>'}</div></div></div>`;
     } else
@@ -1210,12 +1231,12 @@ function render() {
   $("stepPrev").title = view.mode === "week" ? "Предыдущая неделя" : "Предыдущий день";
   $("stepNext").title = view.mode === "week" ? "Следующая неделя" : "Следующий день";
   $("collapse").hidden = !(bucket && isMobile());
+  $("toTasks").hidden = true;
   document.querySelector(".main").classList.toggle("bucket-view", bucket);
   document.querySelector(".main").classList.remove("quick-view");
   $("mBuckets").hidden = bucket;
   $("mProgWrap").hidden = bucket;
   $("mInboxN").textContent = active(INBOX).length || "";
-  $("mSomedayN").textContent = active(SOMEDAY).length || "";
   $("mQuickN").textContent = typeof quickCount === "function" ? (quickCount() || "") : "";
   $("carryBtn").hidden = view.mode !== "day" || bucket || active(view.date).length === 0;
   sideCal._show(view.mode === "day" && !bucket ? view.date : TODAY);
@@ -1230,14 +1251,15 @@ function toastUndo(t, undo) {
   el._t = setTimeout(() => el.hidden = true, 3000);
 }
 function go(mode, date) {
-  const full = (m, d) => m === "quick" || (m === "day" && isBucket(d));
-  if (full(mode, date) && !full(view.mode, view.date)) view.back = { mode: view.mode, date: view.date };
-  if (date === ARCHIVE && view.date === INBOX) view.archBack = true; else if (date !== ARCHIVE) view.archBack = false;
+  if (isBucket(date) && !(view.mode === "day" && isBucket(view.date))) view.back = { mode: view.mode, date: view.date };
+  const sub = d => d === ARCHIVE || d === SOMEDAY;
+  if (sub(date) && view.date === INBOX) view.archBack = true; else if (!sub(date)) view.archBack = false;
+  try { localStorage.setItem("bd-view", mode === "quick" ? "quick" : "tasks"); } catch {}
   view.mode = mode; view.date = date; closeMenu(); render(); $("board").scrollTop = 0;
 }
-$("collapse").onclick = () => { if (view.date === ARCHIVE && view.archBack) return go("day", INBOX); const b = view.back || { mode: "day", date: TODAY }; go(b.mode, b.date); };
+$("collapse").onclick = () => { if ((view.date === ARCHIVE || view.date === SOMEDAY) && view.archBack) return go("day", INBOX); const b = view.back || { mode: "day", date: TODAY }; go(b.mode, b.date); };
 MQ.addEventListener("change", render);
-$("aim").onclick = $("aimInline").onclick = () => go("day", TODAY);
+$("aim").onclick = $("aimInline").onclick = $("toTasks").onclick = () => go("day", TODAY);
 
 /* ---------- быстрое добавление ---------- */
 const addDate = () => view.mode === "day" ? (view.date === ARCHIVE ? INBOX : view.date) : TODAY;
@@ -1709,8 +1731,7 @@ function shiftDay(n, week = false) {
 const mainEl = document.querySelector(".main");
 let pull = null;
 mainEl.addEventListener("touchstart", e => {
-  if (!isMobile() || !(view.mode === "quick" || (view.mode === "day" && isBucket(view.date)))) return;
-  if (e.target.closest(".q-tabs")) return;
+  if (!isMobile() || !(view.mode === "day" && isBucket(view.date))) return;
   if ($("board").scrollTop > 0 && !e.target.closest(".head,.grab")) return;
   pull = { y: e.touches[0].clientY, dy: 0 };
 }, { passive: true });
@@ -2008,6 +2029,6 @@ render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
-<script src="quick.js?v=5"></script>
+<script src="quick.js?v=7"></script>
 </body>
 </html>
