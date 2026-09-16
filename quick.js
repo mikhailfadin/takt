@@ -36,7 +36,7 @@ async function qLoad(force) {
     ]);
     if (notes.error) throw notes.error;
     const keys = qStepKeys();
-    Q.notes = (notes.data || []).filter(n => !Q.hidden.has(n.id)).map(n => ({ ...n, steps: (n.steps || []).map((s, i) => ({ ...s, basket: keys.has(`${n.id}:${i}`) && !s.done })) }));
+    Q.notes = qOverlay((notes.data || []).filter(n => !Q.hidden.has(n.id)).map(n => ({ ...n, steps: (n.steps || []).map((s, i) => ({ ...s, basket: keys.has(`${n.id}:${i}`) && !s.done })) })));
     Q.settings = (set.data && set.data[0]) || { streak: 0, streak_day: null };
     Q.error = ""; Q.at = Date.now();
   } catch (e) {
@@ -46,10 +46,49 @@ async function qLoad(force) {
   Q.loading = false; Q.loaded = true;
   render();
 }
+/* Мои правки держатся на устройстве, пока облако их не догонит: мост пишет в заметку не мгновенно,
+   и без этого после обновления страницы сделанное «воскресает». */
+function qMark(note, op, value) {
+  const f = { status: "status", basket: "basket", minutes: "minutes" }[op];
+  if (!f && op !== "step" && op !== "trash") return null;
+  const p = qRead("bd-pending") || {}, cur = p[note.id] || {};
+  if (f) cur[f] = value[f];
+  if (op === "status" && value.status === "сделано") cur.doneAt = new Date().toISOString();
+  if (op === "step" && value.done) cur.stepsDone = [...new Set([...(cur.stepsDone || []), value.index])];
+  if (op === "trash") cur.trash = true;
+  cur.at = Date.now(); p[note.id] = cur; qStore("bd-pending", p);
+  return cur.at;
+}
+function qOverlay(notes) {
+  const p = qRead("bd-pending") || {};
+  let dirty = false;
+  for (const [id, f] of Object.entries(p)) {
+    const n = notes.find(x => x.id === id);
+    if (!n || Date.now() - f.at > 30 * 60e3) { delete p[id]; dirty = true; continue; }
+    const caught = !f.trash
+      && (f.status === undefined || n.status === f.status)
+      && (f.basket === undefined || n.basket === f.basket)
+      && (f.minutes === undefined || n.minutes === f.minutes)
+      && (f.stepsDone || []).every(i => n.steps?.[i]?.done);
+    if (caught) { delete p[id]; dirty = true; continue; }
+    if (f.status !== undefined) { n.status = f.status; if (f.doneAt) n.updated_at = f.doneAt; }
+    if (f.basket !== undefined) n.basket = f.basket;
+    if (f.minutes !== undefined) n.minutes = f.minutes;
+    (f.stepsDone || []).forEach(i => { if (n.steps?.[i]) { n.steps[i].done = true; n.steps[i].basket = false; } });
+  }
+  if (dirty) qStore("bd-pending", p);
+  return notes.filter(n => !(p[n.id] && p[n.id].trash));
+}
 function qChange(note, op, value) {
   if (!sb || !user) return;
+  const at = qMark(note, op, value);
   sb.from("bd_changes").insert({ user_id: user.id, note_id: note.id, op, value })
-    .then(({ error }) => { if (error) toast("Не ушло в Obsidian — проверь связь"); });
+    .then(({ error }) => {
+      if (!error) return;
+      const p = qRead("bd-pending") || {};
+      if (at && p[note.id] && p[note.id].at === at) { delete p[note.id]; qStore("bd-pending", p); }
+      toast("Не ушло в Obsidian — проверь связь и повтори");
+    });
 }
 
 /* ---------- выборки ---------- */
