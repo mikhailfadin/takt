@@ -120,10 +120,16 @@ const qFind = key => {
   if (!note) return null;
   return { key, note, step: i === undefined ? null : { ...note.steps[+i], i: +i } };
 };
+const qAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return qDay(d); };
+const qMonday = day => { const d = new Date(day + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return qDay(d); };
+const qFrozenDay = () => { const v = String((Q.settings || {}).frozen_week || ""); return v.length === 8 ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6)}` : null; };
+const qFreezeFree = day => { const f = qFrozenDay(); return !f || qMonday(f) !== qMonday(day); };
 function qStreak() {
   const s = Q.settings || {};
-  const alive = s.streak_day === qDay() || s.streak_day === qYesterday();
-  return { n: alive ? (s.streak || 0) : 0, today: s.streak_day === qDay() };
+  const today = s.streak_day === qDay();
+  const fresh = today || s.streak_day === qYesterday();
+  const saved = !fresh && s.streak_day === qAgo(2) && qFreezeFree(qYesterday());
+  return { n: fresh || saved ? (s.streak || 0) : 0, today, pending: saved, frozen: qFrozenDay(), free: qFreezeFree(qDay()) };
 }
 function qRank() {
   const total = Q.notes.filter(qIsDone).length + Q.notes.reduce((a, n) => a + (n.starts || 0), 0) + ((Q.settings || {}).total_done || 0);
@@ -153,9 +159,14 @@ async function qCredit(note) {
   qChange(note, "start", { starts: note.starts });
   const s = Q.settings || (Q.settings = {});
   if (s.streak_day === qDay()) return;
-  s.streak = (s.streak_day === qYesterday() ? (s.streak || 0) : 0) + 1;
+  if (s.streak_day === qYesterday()) s.streak = (s.streak || 0) + 1;
+  else if (s.streak_day === qAgo(2) && qFreezeFree(qYesterday())) {
+    s.streak = (s.streak || 0) + 1;
+    s.frozen_week = +qYesterday().replace(/-/g, "");
+    toast("Вчерашний пропуск закрыт заморозкой — серия жива");
+  } else s.streak = 1;
   s.streak_day = qDay();
-  const { error } = await sb.from("bd_settings").upsert({ user_id: user.id, streak: s.streak, streak_day: s.streak_day });
+  const { error } = await sb.from("bd_settings").upsert({ user_id: user.id, streak: s.streak, streak_day: s.streak_day, frozen_week: s.frozen_week || 0 });
   if (error) console.warn("быстрые дела: серия", error);
 }
 function qFinish(entry, { credit = true } = {}) {
@@ -318,13 +329,18 @@ function qItemPlain(n, { cls = "", meta = "" } = {}) {
   const steps = n.steps || [];
   const inB = steps.length ? steps.some(s => s.basket && !s.done) : n.basket;
   if (Q.sel) {
-    const on = Q.sel.has(n.id);
+    const on = Q.sel.has(n.id), here = on && Q.selLast === n.id;
     return `<div class="q-row sel${on ? " chosen" : ""}${cls ? " " + cls : ""}">
       <div class="q-line">
         <button class="q-row-main" data-q-sel="${n.id}">
           <span class="q-box sel-box">${on ? QI.check : ""}</span>
           <span class="q-t"><b>${qe(n.title)}</b><span>${meta}</span></span>
         </button>
+        ${here ? `<div class="q-sel-here">
+          <span class="q-sel-n">${Q.sel.size}</span>
+          <button class="q-soft sm" data-q-sel-take title="Взять выбранные в работу">${QI.bolt}<span>В работу</span></button>
+          <button class="q-soft sm danger" data-q-sel-trash title="Удалить выбранные в корзину">${QI.x}<span>Удалить</span></button>
+        </div>` : ""}
       </div>
     </div>`;
   }
@@ -448,12 +464,18 @@ function qBody() {
   return qToolbar(live, true) + (groups || '<div class="empty">Ничего не нашлось</div>');
 }
 function qSide() {
-  const { n, today } = qStreak();
+  const st = qStreak(), { n, today } = st;
+  const on = new Set(), ice = new Set();
+  if (n) {
+    let d = new Date((Q.settings.streak_day || qDay()) + "T12:00:00"), left = n;
+    while (left > 0) { const k = qDay(d); if (k === st.frozen) ice.add(k); else { on.add(k); left--; } d.setDate(d.getDate() - 1); }
+  }
+  if (st.pending) ice.add(qYesterday());
   const cells = [...Array(14)].map((_, i) => {
-    const isToday = i === 13;
-    const on = isToday ? today : i >= 13 - (today ? n - 1 : n) && i < 13;
-    return `<i class="${on ? "on" : ""}${isToday ? " today" : ""}"></i>`;
+    const k = qAgo(13 - i);
+    return `<i class="${on.has(k) ? "on" : ice.has(k) ? "ice" : ""}${i === 13 ? " today" : ""}"${ice.has(k) ? ' title="Заморозка: пропуск не сжёг серию"' : ""}></i>`;
   }).join("");
+  const iceLine = st.pending ? "вчера пропуск — сделай подход сегодня, заморозка спасёт серию" : st.free ? "❄ заморозка на этой неделе есть" : "❄ заморозка на этой неделе потрачена";
   const r = qRank();
   const pct = r.next ? Math.round(100 * (r.total - r.cur[0]) / (r.next[0] - r.cur[0])) : 100;
   const basket = qBasket();
@@ -461,6 +483,7 @@ function qSide() {
       <div class="q-big-n"><b>${n}</b><span>${qPlural(n, "день", "дня", "дней")} подряд</span></div>
       <div class="q-chain" title="Клетка — день. Закрашена, если в этот день был хоть один подход">${cells}</div>
       <div class="q-chain-l"><span>2 недели назад</span><span>${today ? "сегодня есть" : "сегодня — ещё нет"}</span></div>
+      <div class="q-ice${st.pending ? " warn" : ""}" title="Один пропущенный день в неделю не обнуляет серию">${iceLine}</div>
     </div>
     <div class="q-card q-rank">
       <div class="q-rank-h"><span>Звание</span><b>${r.cur[1]}</b></div>
@@ -572,7 +595,11 @@ $("board").addEventListener("click", e => {
   if (d.qTrash) return qTrash([d.qTrash]);
   if (d.qSelStart !== undefined) { Q.sel = new Set(); Q.open = {}; return render(); }
   if (d.qSelCancel !== undefined) { Q.sel = null; return render(); }
-  if (d.qSel) { Q.sel.has(d.qSel) ? Q.sel.delete(d.qSel) : Q.sel.add(d.qSel); return render(); }
+  if (d.qSel) {
+    if (Q.sel.has(d.qSel)) { Q.sel.delete(d.qSel); Q.selLast = [...Q.sel].pop() || null; }
+    else { Q.sel.add(d.qSel); Q.selLast = d.qSel; }
+    return render();
+  }
   if (d.qSelAll !== undefined) {
     const list = Q.visible || [];
     const all = list.length && list.every(x => Q.sel.has(x.id));

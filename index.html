@@ -12,7 +12,7 @@
 <script>try{var t=localStorage.getItem("takt-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script>
 // автообновление: iPhone держит старую страницу в кэше — сверяем версию и открываем свежую
-var APP_V = "23";
+var APP_V = "24";
 function checkUpdate() {
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
     if (!d.v || d.v === APP_V) return;
@@ -272,6 +272,7 @@ input,textarea{font:inherit;color:inherit}
 
 /* ---------- основная часть ---------- */
 .main{display:flex;flex-direction:column;min-width:0;position:relative}
+@media (min-width:761px){.main{min-height:0;height:100vh;overflow:hidden}.board{min-height:0}}
 .head{padding:34px 40px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
 h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025em}
 .period{position:relative;color:var(--accent);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px;cursor:pointer;white-space:nowrap}
@@ -361,7 +362,7 @@ h1{margin:0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.025
 .day .meta{grid-column:2;padding:0}
 
 /* нижняя панель ввода */
-.dock{position:absolute;left:40px;right:40px;bottom:24px;display:flex;gap:12px;align-items:center}
+.dock{position:absolute;z-index:10;left:40px;right:40px;bottom:24px;display:flex;gap:12px;align-items:center}
 .pill{height:50px;padding:0 20px;border-radius:25px;background:var(--side);border:1px solid var(--line);font-weight:500;color:var(--text);white-space:nowrap}
 .pill:hover{background:var(--accent-soft);border-color:var(--check)}
 .adder{flex:1;display:flex;align-items:center;height:54px;background:var(--dock-card);color:var(--dock-text);border-radius:27px;box-shadow:var(--shadow-lg);padding:0 8px 0 22px;gap:10px}
@@ -761,6 +762,12 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 .q-mins button:hover{color:var(--accent)}
 .q-mins button.on{background:var(--accent);color:var(--on-accent)}
 .q-mins small{text-align:center;font-size:10px;color:var(--mute);line-height:1}
+.q-sel-here{display:flex;align-items:center;gap:6px;padding-right:10px}
+.q-sel-here .q-sel-n{min-width:26px;height:26px;padding:0 7px;border-radius:13px;background:var(--accent);color:var(--on-accent);font:600 12px/26px var(--mono);text-align:center}
+.q-sel-here .q-soft.sm{height:36px;padding:0 12px}
+.q-ice{margin-top:10px;font-size:12px;color:var(--mute)}
+.q-ice.warn{color:var(--accent)}
+.q-chain i.ice{background:repeating-linear-gradient(45deg,var(--accent-soft) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .q-fold{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;font:500 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
 .q-fold .n{color:var(--dim)}
 .q-fold .q-chev{margin-left:0}
@@ -893,6 +900,9 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .q-tools .q-soft.sm{height:44px}
   .q-selbar{top:-4px;border-radius:20px}
   .q-selbar .q-soft.sm{height:38px;padding:0 10px}
+  .q-sel-here .q-soft.sm span{display:none}
+  .q-sel-here .q-soft.sm{width:38px;padding:0;justify-content:center}
+  .q-ice{grid-column:1/-1}
   .q-t b{font-size:15.5px}
   .q-acts .q-go{height:42px}
   .q-focus,.q-award{padding:28px 18px 24px;border-radius:22px}
@@ -2073,6 +2083,6 @@ render();
 paintFbar();
 if (typeof initCloud === "function") initCloud();
 </script>
-<script src="quick.js?v=12"></script>
+<script src="quick.js?v=13"></script>
 </body>
 </html>
